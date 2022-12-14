@@ -32,7 +32,14 @@ def return_element_values(object, chrome): #returns a list of the values of feat
         element_values['text'] = element.text
         # element_values['children'] = [{'tag_name' : e.tag_name, 'text' : e.text} for e in element.find_elements(By.TAG_NAME, 'form , button , nav , checkbutton , radio , input', 'select')]
         element_values['region'], element_values['close_reference'] = tools.find_element_region(element, viewport_coords)
-        element_values['human_readable_position'] = tools.find_human_readable_position(element, chrome)
+        element_values['human_readable_position'] = tools.find_human_readable_position(element, chrome)[1]
+        element_values['subject'] = np.random.choice(['hotels','homes','jobs','matches','games','deals'])
+        element_values['action'] = np.random.choice(['search', 'filter', 'sort']) # ...area with search / filter / sort options...
+        element_values['description'] = f'{element_values["action"]} {element_values["subject"]} in the {element_values["human_readable_position"]} region of the window.'
+        element_values['model_input'] = ''
+        for col in ['action','human_readable_position']:
+            element_values['model_input'] += f'{element_values["subject"]} | {col} | {element_values[col]} &&'
+        element_values['model_input'] = element_values['model_input'].strip('&&').strip()
         for col in ['id','name','class']:
             try:
                 # WebDriverWait(chrome).until(EC.presence_of_element_located((By.ID, element.id)))
@@ -53,8 +60,7 @@ def return_element_values(object, chrome): #returns a list of the values of feat
             element_values['first_class_div'] = np.nan
                 
         all_element_values.append(element_values)
-    element_values['subject'] = np.random.choice(['hotels','homes','jobs','matches','games','deals'])
-    element_values['action'] = np.random.choice(['search', 'filter', 'sort']) # ...area with search / filter / sort options...
+    
     return all_element_values
 
 def make_dataset(url, columns = ['tag', 'name', 'class','id', 'text']): #Creates dataset using return_element_values(object, chrome)
@@ -72,8 +78,8 @@ def make_dataset(url, columns = ['tag', 'name', 'class','id', 'text']): #Creates
         # return pd.concat(map(lambda object: pd.DataFrame(return_element_values(object, chrome), columns= columns), ['button','form','field']))
 
 ###########driver code
-web_data = pd.DataFrame(columns = ['tag', 'subject', 'action', 'name', 'class','id', 'text','location','size', 'region', 'close_reference', 'human_readable_position','url'])
-for url in [r"https://www.reddit.com/r/learnprogramming/top/?t=month",r'https://www.expedia.com/Hotel-Search?destination=Scotland%2C%20United%20Kingdom&endDate=2022-12-27&regionId=11219&rooms=1&semdtl=&sort=RECOMMENDED&startDate=2022-12-26&theme=&useRewards=false&userIntent=',r'https://www.indeed.com/',r'https://www.tripadvisor.com/',r'https://www.yellowpages.com/',r'https://www.ebay.com/',r'https://www.ebay.com/b/PC-Gaming/bn_7000259657']: #[r'https://www.expedia.com/Hotel-Search?&destination=Scotland%2C%20United%20KingdomregionId=11219&rooms=1&semdtl=&sort=RECOMMENDED&startDate=2022-12-26&theme=&useRewards=false&userIntent=']:
+web_data = pd.DataFrame(columns = ['tag', 'subject', 'action', 'name', 'class','id', 'text','location','size', 'region', 'close_reference', 'human_readable_position','url','description','model_input'])
+for url in [r"https://www.reddit.com/r/learnprogramming/top/?t=month",r'https://www.crunchyroll.com/', r'https://www.espn.com/', r'https://www.expedia.com/Hotel-Search?destination=Scotland%2C%20United%20Kingdom&endDate=2022-12-27&regionId=11219&rooms=1&semdtl=&sort=RECOMMENDED&startDate=2022-12-26&theme=&useRewards=false&userIntent=',r'https://www.indeed.com/',r'https://www.tripadvisor.com/',r'https://www.yellowpages.com/',r'https://www.ebay.com/',r'https://www.ebay.com/b/PC-Gaming/bn_7000259657', r'https://www.flipkart.com/mobile-accessories/mobile-phone-lens/pr?sid=tyy%2C4mr%2Ckx1&marketplace=FLIPKART&sort=popularity&ctx=eyJjYXJkQ29udGV4dCI6eyJhdHRyaWJ1dGVzIjp7InZhbHVlQ2FsbG91dCI6eyJtdWx0aVZhbHVlZEF0dHJpYnV0ZSI6eyJrZXkiOiJ2YWx1ZUNhbGxvdXQiLCJpbmZlcmVuY2VUeXBlIjoiVkFMVUVfQ0FMTE9VVCIsInZhbHVlcyI6WyJHcmFiIGl0ISJdLCJ2YWx1ZVR5cGUiOiJNVUxUSV9WQUxVRUQifX0sInRpdGxlIjp7Im11bHRpVmFsdWVkQXR0cmlidXRlIjp7ImtleSI6InRpdGxlIiwiaW5mZXJlbmNlVHlwZSI6IlRJVExFIiwidmFsdWVzIjpbIk1vYmlsZSBwaG9uZSBMZW5zIl0sInZhbHVlVHlwZSI6Ik1VTFRJX1ZBTFVFRCJ9fSwiaGVyb1BpZCI6eyJzaW5nbGVWYWx1ZUF0dHJpYnV0ZSI6eyJrZXkiOiJoZXJvUGlkIiwiaW5mZXJlbmNlVHlwZSI6IlBJRCIsInZhbHVlIjoiTVBMR1lLNDNSWjM4SDc2RyIsInZhbHVlVHlwZSI6IlNJTkdMRV9WQUxVRUQifX19fX0%3D&fm=neo%2Fmerchandising&iid=M_8c187899-7d69-43d5-8a18-5f7ffc075f90_12.ULGYM93X91QA&ppt=hp&ppn=homepage&ssid=cr94cgrkuo0000001670964467434&otracker=clp_omu_infinite_Mobile%2BAccessories_2_12.dealCard.OMU_INFINITE_elec-b2b-store_elec-b2b-store_ULGYM93X91QA&cid=ULGYM93X91QA']: #[r'https://www.expedia.com/Hotel-Search?&destination=Scotland%2C%20United%20KingdomregionId=11219&rooms=1&semdtl=&sort=RECOMMENDED&startDate=2022-12-26&theme=&useRewards=false&userIntent=']:#[r'https://neosportusa.com/product-category/accessories/',r'https://www.fiverr.com/categories/data/data-science?source=category_tree',r'https://www.codecademy.com/catalog/language/python',r'https://www.udemy.com/topic/python/',r'https://www.cnn.com/us']:
     web_data = pd.concat( [web_data, make_dataset(url, web_data.columns)])
     web_data['url'] = url
 print(web_data.head())
