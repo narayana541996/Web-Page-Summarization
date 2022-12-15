@@ -1,0 +1,9 @@
+input_text,output_text
+search bar| quantity | 1  &&  search bar| action |  search  &&   search bar|  subject | airport  &&   search bar|  region | top  &&   search bar|  covering  | long,A long search bar to  search for airport at the top.
+button | quantity | one  &&  button | action |  submit && button | subject | enquiry && button|  region  |  bottom-left,A button to submit the enquiry on the bottom-left region of the window
+search area | quantity | 1 &&  search area | action | search && search area | subject | available flights &&  search area | region  | center-right-top,A search area to search for available flights in the center-right region of the window close to the top.
+checkbox | quantity | 2  && checkbox | action | select && checkbox |  subject | gender  && checkbox |  region  | lower-left-center  && checkbox |  covering  | tiny,"2 tiny checkboxes to select the gender in the lower-left region of the window, close to the center."
+dropdown | quantity | 1 && dropdown | region  | center  && dropdown |  covering  | small,A small dropdown at the center
+search-results | quantity | 10 && search-results | subject | flights  && search-results |  covering  | whole-window,10 search-results covering the whole window.
+ section | quantity | 1 && section | subject | pollution  &&  section |  region  | center &&  section |  coverage | most-window,A block about pollution in the center covering most of the window.
+filter | quantity | 1 && filter | action | filter-results && filter |  subject | flights  && filter | region | lower-left-center,"A filter to filter the flights in the lower-left region of the window, close to the center."
