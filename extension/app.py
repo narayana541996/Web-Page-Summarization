@@ -32,11 +32,11 @@ def generate(text, model_path = r't5-model', tokenizer_path = r't5-model'):
   outputs = model.generate(input_ids)
   return tokenizer.decode(outputs[0]).strip('<pad>').strip('</s>').strip()
 
-def load(html):
+def load(text):
     ''' Takes in html page and load it's content and return objects as structured data.'''
     # structured_data = 'animals | action | filter && animals | location | center'
-    structured_data = 'Hotels | action | sort && Hotels | human_readable_position | top-left'.replace('_',' ').replace('-',' ')
-    # structured_data = ['Hotels | action | search && Hotels | human_readable_position | top', 'Hotels | action | sort && Hotels | human_readable_position | top-right','Hotels | action | filter && Hotels | human_readable_position | left', 'Hotels | action | find search results && Hotels | location | bottom-right']
+    # structured_data = 'Hotels | action | sort && Hotels | human_readable_position | top-left'.replace('_',' ').replace('-',' ')
+    structured_data = text
     print(structured_data)
     return structured_data
 
@@ -79,7 +79,8 @@ def trigger():
     # print(url)
     # text = request.args['text']
     text = ''
-    speak(generate(load(text)))
+    for text in ['Hotels | action | search && Hotels | human_readable_position | top', 'Hotels | action | sort && Hotels | human_readable_position | top-right','Hotels | action | filter && Hotels | human_readable_position | left', 'Hotels | action | find search results && Hotels | location | bottom-right']:
+        speak(generate(load(text)))
     return text
 
 
@@ -87,5 +88,6 @@ if __name__ == '__main__':
     # app.run()
     # for text in load(''):
     #     print(text)
-    speak(generate(load('Hotels | action | filter && Hotels | human_readable_position | left')))
+    for text in ['Hotels | action | search && Hotels | human_readable_position | top', 'Hotels | action | sort && Hotels | human_readable_position | top-right','Hotels | action | filter && Hotels | human_readable_position | left', 'Results | action | discover && Results | location | bottom-right']:
+        speak(generate(load(text)))
     # map(lambda text: speak(generate(text)), load(''))
