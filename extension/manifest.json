@@ -1,0 +1,16 @@
+{
+    "manifest_version" : 1,
+    "name": "Extension",
+    "Version" : "3.0",
+    "action" : {
+        "default_popup" : "trigger.html"
+    },
+    "background" : {
+        "scripts" : ["eventPage.js"],
+        "persistent" : true
+    },
+    "content_scripts" : {
+        "matches" : ["*"],
+        "js" : ["trigger.js"]
+    }
+}

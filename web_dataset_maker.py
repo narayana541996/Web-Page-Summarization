@@ -9,19 +9,28 @@ Original file is located at
 
 # !pip install selenium
 
+# auxiliary
+from collections import defaultdict
+from time import sleep
+
+# web and browser
 from bs4 import BeautifulSoup as bs
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, StaleElementReferenceException, NoSuchElementException, NoSuchAttributeException
-from collections import defaultdict
-from time import sleep
-import pandas as pd
-import numpy as np
+## custom
 import dim_coord_tools as tools
 
-def return_element_values(object, chrome): #returns a list of the values of features
+# data
+import pandas as pd
+import numpy as np
+
+
+
+def return_element_values(object, chrome):
+    '''returns a list of the values of features'''
     element_values = {}
     all_element_values = []
     viewport_coords = tools.find_viewport_dims_coords(chrome)
@@ -68,7 +77,8 @@ def return_element_values(object, chrome): #returns a list of the values of feat
     
     return all_element_values
 
-def make_dataset(url, columns = ['tag', 'name', 'class','id', 'text']): #Creates dataset using return_element_values(object, chrome)
+def make_dataset(url, columns = ['tag', 'name', 'class','id', 'text']):
+    '''Creates dataset using return_element_values(object, chrome)'''
     # options = webdriver.ChromeOptions()
     # options.add_argument("headless")
     with webdriver.Chrome() as chrome:
@@ -84,6 +94,8 @@ def make_dataset(url, columns = ['tag', 'name', 'class','id', 'text']): #Creates
             #     continue
         return pd.concat(object_values)
         # return pd.concat(map(lambda object: pd.DataFrame(return_element_values(object, chrome), columns= columns), ['button','form','field']))
+
+
 
 ###########driver code
 web_data = pd.DataFrame(columns = ['tag', 'subject', 'action', 'name', 'class','id', 'text','location','size', 'region', 'close_reference', 'human_readable_position','url','description','model_input'])
