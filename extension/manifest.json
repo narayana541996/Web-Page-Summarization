@@ -1,16 +1,13 @@
 {
-    "manifest_version" : 1,
+    "manifest_version": 3,
     "name": "Extension",
-    "Version" : "3.0",
+    "version" : "1.0",
     "action" : {
         "default_popup" : "trigger.html"
     },
-    "background" : {
-        "scripts" : ["eventPage.js"],
-        "persistent" : true
-    },
-    "content_scripts" : {
-        "matches" : ["*"],
+    
+    "content_scripts" : [{
+        "matches" : ["https://www.expedia.com/*"],
         "js" : ["trigger.js"]
-    }
+    }]
 }

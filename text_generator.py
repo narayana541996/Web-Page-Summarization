@@ -7,14 +7,16 @@ Original file is located at
     https://colab.research.google.com/drive/1wDvExx_iaWxhVnF1EsHNuBFy6SCyrT2X
 """
 
-
+#nlp
 from transformers import T5Tokenizer, T5ForConditionalGeneration
+
+#data
 import pandas as pd
 import numpy as np
 
 
 
-def generate(text, model_path = 't5-model', tokenizer_path = 't5-model'):
+def generate(text, model_path = r'C:\assignments\cs733-nlp\web-page-summarizer\extension\t5-model', tokenizer_path = r'C:\assignments\cs733-nlp\web-page-summarizer\extension\t5-model'):
   tokenizer = T5Tokenizer.from_pretrained(model_path, return_tensors = 'pt')
   model = T5ForConditionalGeneration.from_pretrained(tokenizer_path, return_dict = True)
   model.eval()
@@ -39,3 +41,4 @@ if __name__ == '__main__':
   # sum((test_df['model_output'].map(lambda row: row.strip().lower()) == test_df['description'].map(lambda row: row.strip().lower())).astype('int')) / len(test_df)
 
   print(generate('animals | action | filter && animals | location | center'))
+  print(generate('flight | action | locate flights && flights | location | bottom-right'))
