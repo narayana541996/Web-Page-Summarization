@@ -1,0 +1,12 @@
+Flask==2.2.2
+Flask_Cors==3.0.10
+gTTS==2.3.0
+ipython==8.7.0
+mutagen==1.46.0
+pandas==1.4.1
+pygame==2.1.2
+pywinauto==0.6.8
+selenium==4.7.2
+torch==1.13.0
+transformers==4.21.2
+wget==3.2
