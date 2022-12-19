@@ -8,7 +8,8 @@ Output video: https://youtu.be/IFAdOiZNzlQ
 
 Zip file with presentation video: https://drive.google.com/file/d/19E04cLbo1GsBOfDJGbpWJgoY1j41E3Et/view?usp=sharing
 
-Requirements:
+# Requirements:
+Note: Assuming Python is already installed.
 
 Flask==2.2.2<br />
 Flask_Cors==3.0.10<br />
