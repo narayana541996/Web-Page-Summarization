@@ -9,7 +9,7 @@ Output video: https://youtu.be/IFAdOiZNzlQ
 Zip file with presentation video: https://drive.google.com/file/d/19E04cLbo1GsBOfDJGbpWJgoY1j41E3Et/view?usp=sharing
 
 # Requirements:
-Note: Assuming Python is already installed.
+Note: These are for the Python portion of the work and assume Python is already installed.
 
 Flask==2.2.2<br />
 Flask_Cors==3.0.10<br />
@@ -40,7 +40,9 @@ Steps used for testing the API before installing the extension:
 
 Steps to install the extension:
 
-3) Go to the Customize and control options, which can be found at the top right corner of the window under close button.
+Note: This assumes that the latest version of the Google Chrome (complies with manifest version 3) is already installed.
+
+3) On chrome, go to the Customize and control options, which can be found at the top right corner of the window under close button.
 4) Go to more tools -> Extensions.
 5) Make sure that the 'Developer Mode' is turned on, in the top-right region of the window.
 6) Select 'Load Unpacked' and select the 'Extension' folder.
