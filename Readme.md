@@ -25,7 +25,7 @@ transformers==4.21.2<br />
 wget==3.2<br />
 
 # Directions:
-Note: These steps are with respect to VSCode IDE and assume Python is already installed.
+Note: These steps are with respect to VSCode IDE and assume Python with version compatible with the requirements is already installed.
 
 
 1) Install the required libraries and frameworks.
