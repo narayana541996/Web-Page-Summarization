@@ -10,18 +10,18 @@ Zip file with presentation video: https://drive.google.com/file/d/19E04cLbo1GsBO
 
 Requirements:
 
-Flask==2.2.2
-Flask_Cors==3.0.10
-gTTS==2.3.0
-ipython==8.7.0
-mutagen==1.46.0
-pandas==1.4.1
-pygame==2.1.2
-pywinauto==0.6.8
-selenium==4.7.2
-torch==1.13.0
-transformers==4.21.2
-wget==3.2
+Flask==2.2.2<br />
+Flask_Cors==3.0.10<br />
+gTTS==2.3.0<br />
+ipython==8.7.0<br />
+mutagen==1.46.0<br />
+pandas==1.4.1<br />
+pygame==2.1.2<br />
+pywinauto==0.6.8<br />
+selenium==4.7.2<br />
+torch==1.13.0<br />
+transformers==4.21.2<br />
+wget==3.2<br />
 
 # Directions:
 Note: These steps are with respect to VSCode IDE and assume Python is already installed.
@@ -32,11 +32,13 @@ Note: These steps are with respect to VSCode IDE and assume Python is already in
 
 
 Steps used for testing the API before installing the extension:
+
 3) If not installed, install live server plugin in VSCode.
 4) Once installed, click 'Go Live' which should be found close to the bottom right corner of the IDE.
 5) In Extension folder, select trigger.html and it should run.
 
 Steps to install the extension:
+
 3) Go to the Customize and control options, which can be found at the top right corner of the window under close button.
 4) Go to more tools -> Extensions.
 5) Make sure that the 'Developer Mode' is turned on, in the top-right region of the window.
