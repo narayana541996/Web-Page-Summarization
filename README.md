@@ -9,6 +9,7 @@ Output video: https://youtu.be/IFAdOiZNzlQ
 Zip file with presentation video: https://drive.google.com/file/d/19E04cLbo1GsBOfDJGbpWJgoY1j41E3Et/view?usp=sharing
 
 Requirements:
+
 Flask==2.2.2
 Flask_Cors==3.0.10
 gTTS==2.3.0
