@@ -8,6 +8,20 @@ Output video: https://youtu.be/IFAdOiZNzlQ
 
 Zip file with presentation video: https://drive.google.com/file/d/19E04cLbo1GsBOfDJGbpWJgoY1j41E3Et/view?usp=sharing
 
+Requirements:
+Flask==2.2.2
+Flask_Cors==3.0.10
+gTTS==2.3.0
+ipython==8.7.0
+mutagen==1.46.0
+pandas==1.4.1
+pygame==2.1.2
+pywinauto==0.6.8
+selenium==4.7.2
+torch==1.13.0
+transformers==4.21.2
+wget==3.2
+
 # Introduction
 
 Most devices like computer or smartphone use a screen as the main medium to convey information to the user. As the screen is used to convey information visually, the devices by themselves are not usable for the blind. The ability to access information is called accessibility, and the information that cannot be accessed, like in this scenario, are considered inaccessible, which is an undesirable state and is considered a problem. In order to solve this problem, the screenreader is introduced. A screenreader is an assistive technology which, as the name says, reads the content on the screen. In other words, it converts the output from visual to audio, making the content on the devices accessible to a blind user.
