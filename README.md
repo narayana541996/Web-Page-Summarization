@@ -23,6 +23,26 @@ torch==1.13.0
 transformers==4.21.2
 wget==3.2
 
+# Directions:
+Note: These steps are with respect to VSCode IDE and assume Python is already installed.
+
+
+1) Install the required libraries and frameworks.
+2) Run the app.py file using python -m flask run to start the server and copy the address.
+
+
+Steps used for testing the API before installing the extension:
+3) If not installed, install live server plugin in VSCode.
+4) Once installed, click 'Go Live' which should be found close to the bottom right corner of the IDE.
+5) In Extension folder, select trigger.html and it should run.
+
+Steps to install the extension:
+3) Go to the Customize and control options, which can be found at the top right corner of the window under close button.
+4) Go to more tools -> Extensions.
+5) Make sure that the 'Developer Mode' is turned on, in the top-right region of the window.
+6) Select 'Load Unpacked' and select the 'Extension' folder.
+7) The extension should now be ready to use.
+
 # Introduction
 
 Most devices like computer or smartphone use a screen as the main medium to convey information to the user. As the screen is used to convey information visually, the devices by themselves are not usable for the blind. The ability to access information is called accessibility, and the information that cannot be accessed, like in this scenario, are considered inaccessible, which is an undesirable state and is considered a problem. In order to solve this problem, the screenreader is introduced. A screenreader is an assistive technology which, as the name says, reads the content on the screen. In other words, it converts the output from visual to audio, making the content on the devices accessible to a blind user.
