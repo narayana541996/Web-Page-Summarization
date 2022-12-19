@@ -1,0 +1,13 @@
+{
+    "manifest_version": 3,
+    "name": "Extension",
+    "version" : "1.0",
+    "action" : {
+        "default_popup" : "trigger.html"
+    },
+    
+    "content_scripts" : [{
+        "matches" : ["https://www.expedia.com/*"],
+        "js" : ["trigger.js"]
+    }]
+}
