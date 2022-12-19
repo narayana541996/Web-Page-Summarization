@@ -9,7 +9,7 @@ Output video: https://youtu.be/IFAdOiZNzlQ
 Zip file with presentation video: https://drive.google.com/file/d/19E04cLbo1GsBOfDJGbpWJgoY1j41E3Et/view?usp=sharing
 
 # Requirements:
-Note: These are for the Python portion of the work and assume that the Python version compatible with the following requirements is already installed.
+Note: These are for the Python portion of the work and assume that the Python with version compatible with the following requirements is already installed.
 
 Flask==2.2.2<br />
 Flask_Cors==3.0.10<br />
