@@ -1,5 +1,6 @@
 # auxiliary
 from logging import FileHandler, WARNING
+import numpy as np ##### Add numpy to requirements.txt
 import time
 import sys
 sys.path.insert(0, r'C:\assignments\cs733-nlp\web-page-summarizer')
@@ -68,6 +69,10 @@ def coroutine_primer(coroutine):
         cr.next()
         return cr
     return wrap
+@coroutine_primer
+def prepare_features():
+    datapoint = yield
+    print(datapoint)
 
 @app.route('/trigger/')
 def trigger():
@@ -92,10 +97,14 @@ def trigger():
     features = ['has_inner_text', 'has_search_inner_text', 'num_search', 'has_button', 'has_search_attr', 'coordinates']
     feature_dict = {feature: request.args.get(feature) for feature in features}
     print('len(features): ',len(features))
+    feature_preparer = prepare_features
     for k in features.keys():
         print(k,':',len(features[k]))
-        print(features[k])
+    feature_array = np.array(features.values())
+    for i in range(feature_array.shape[1]):
     ############# Use coroutine/generator to convert the parameters into features
+        feature_preparer.send(feature_array[:, i])
+
     text = ''
     for text in ['Hotels | action | search && Hotels | human_readable_position | top', 'Hotels | action | sort && Hotels | human_readable_position | top-right','Hotels | action | filter && Hotels | human_readable_position | left', 'Results | action | discover && Results | location | center-bottom-right']:
         speak(generate(load(text)))
