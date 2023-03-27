@@ -5,6 +5,7 @@
     "action" : {
         "default_popup" : "trigger.html"
     },
+    "permissions" : ["activeTab", "scripting"],
     
     "content_scripts" : [{
         "matches" : ["https://www.expedia.com/*"],
