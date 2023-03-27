@@ -23,6 +23,7 @@ pywinauto==0.6.8<br />
 selenium==4.7.2<br />
 torch==1.13.0<br />
 transformers==4.21.2<br />
+sentencepiece==0.1.97<br />
 wget==3.2<br />
 
 # Directions:
