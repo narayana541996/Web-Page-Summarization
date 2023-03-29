@@ -8,7 +8,7 @@
     "permissions" : ["activeTab", "scripting"],
     
     "content_scripts" : [{
-        "matches" : ["https://www.expedia.com/*"],
+        "matches" : ["https://*/*"],
         "js" : ["trigger.js"]
     }]
 }
