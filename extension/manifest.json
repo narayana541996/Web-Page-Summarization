@@ -2,13 +2,11 @@
     "manifest_version": 3,
     "name": "Extension",
     "version" : "1.0",
-    "action" : {
-        "default_popup" : "trigger.html"
-    },
+    
     "permissions" : ["activeTab", "scripting"],
     
     "content_scripts" : [{
         "matches" : ["https://*/*"],
-        "js" : ["trigger.js"]
+        "js" : ["candidates.js"]
     }]
 }

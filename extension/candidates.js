@@ -87,9 +87,11 @@ class searchCandidates {
             // check if it has inner text (aria-label and placeholder are also considered inner text)
             if (item.attributes['aria-label'] != undefined && item.attributes['aria-label'].value.toLowerCase().match('search')) {
                 has_search_inner_text = true
+                num_search += 1
             }
             if (item.attributes['placeholder'] != undefined && item.attributes['placeholder'].value.toLowerCase().match('search')) {
                 has_search_inner_text = true
+                num_search += 1
             }
             }
             }
@@ -106,7 +108,7 @@ class searchCandidates {
                     }
                
                 }
-                // Check if it has innerText
+                // Check if child has innerText
                  if (child.innerText) {
                     // console.log('child: ',child)
                     // console.log('innerText: ',child.innerText)
@@ -127,6 +129,7 @@ class searchCandidates {
                     has_inner_text = true
                     if (child.attributes['aria-label'].value.toLowerCase().match('search')) {
                         has_search_inner_text = true
+                        num_search += 1
                     }
                 }
                 if (child.attributes['placeholder'] != undefined) {
@@ -135,6 +138,7 @@ class searchCandidates {
                     has_inner_text = true
                     if (child.attributes['placeholder'].value.toLowerCase().match('search')) {
                         has_search_inner_text = true
+                        num_search += 1
                     }
                 }
             }
@@ -152,12 +156,6 @@ class searchCandidates {
                 // console.log('has search attr: ', has_search_attr)
                 has_button = true
                 
-               
-            // if (has_search_attr && has_button && has_inner_text && has_search_inner_text) {
-            //         console.log('returning item: ', item)
-            //         searchCandidates.push(item)
-            //         return item
-            // }
             }
             this.push(item, has_inner_text=has_inner_text, has_search_inner_text=has_search_inner_text, num_search=num_search, has_button=has_button, has_search_attr=has_search_attr)
         }   
@@ -172,4 +170,4 @@ const searchCandidateList = new searchCandidates()
 
 // extract_search_features()
 console.log(searchCandidateList)
-fetch('http://127.0.0.1:5000/trigger?'+searchCandidateList.makeUrlParams()).then(response => response.text).then(result => console.log(result)).catch(error => console.log('error', error))
+fetch('http://127.0.0.1:5000/generate_summary?'+searchCandidateList.makeUrlParams()).then(response => response.text).then(result => console.log(result)).catch(error => console.log('error', error))

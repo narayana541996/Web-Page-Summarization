@@ -66,16 +66,17 @@ def speak(text = 'Hotels | action | sort && Hotels | human_readable_position | t
     time.sleep(audio.info.length)
     return text
 
-def classify(feature_df, filename=r'Model\search_model.sav'):
+def classify(feature_df, filename=r'classifier-models\search_model.sav'):
     classifier_model = pickle.load(open(filename,'rb'))
     coordinates = feature_df.pop('coordinates')
     feature_df['predictions'] = classifier_model.predict(feature_df.values)
     # print('predictions:\n',feature_df["predictions"],'\n\ncoordinates:\n',coordinates)
     print(feature_df.head())
+    return feature_df
 
 
-@app.route('/trigger/')
-def trigger(features = ['has_inner_text', 'has_search_inner_text', 'num_search', 'has_button', 'has_search_attr', 'coordinates']):
+@app.route('/generate_summary/')
+def generate_summary(features = ['has_inner_text', 'has_search_inner_text', 'num_search', 'has_button', 'has_search_attr', 'coordinates']):
     # driver = webdriver.Chrome()
     # url = driver.command_executor._url
     # print(url)
@@ -109,12 +110,12 @@ def trigger(features = ['has_inner_text', 'has_search_inner_text', 'num_search',
         
     feature_df = pd.DataFrame(feature_dict)
     print(feature_df.head())
-    print('info:')
-    print(feature_df.info())
-    classify(feature_df)
-    text = ''
-    for text in ['Hotels | action | search && Hotels | human_readable_position | top', 'Hotels | action | sort && Hotels | human_readable_position | top-right', 'Hotels | action | filter && Hotels | human_readable_position | left', 'Results | action | discover && Results | location | center-bottom-right']:
-        speak(generate(load(text)))
+    # print('info:')
+    # print(feature_df.info())
+    feature_df = classify(feature_df)
+    text = 'generate_summary() called.'
+    # for text in ['Hotels | action | search && Hotels | human_readable_position | top', 'Hotels | action | sort && Hotels | human_readable_position | top-right', 'Hotels | action | filter && Hotels | human_readable_position | left', 'Results | action | discover && Results | location | center-bottom-right']:
+    #     speak(generate(load(text)))
     return text
 
 
