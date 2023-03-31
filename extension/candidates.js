@@ -61,7 +61,18 @@ class searchCandidates {
         let paramNumSearch = this.num_search.join(outer_array_separator)
         let paramHasButton = this.has_button.join(outer_array_separator)
         let paramHasSearchAttr = this.has_search_attr.join(outer_array_separator)
-        let searchParam = `has_inner_text=${paramHasInnerText}&has_search_inner_text=${paramHasSearchInnerText}&num_search=${paramNumSearch}&has_button=${paramHasButton}&has_search_attr=${paramHasSearchAttr}&coordinates=${paramCoordinates}`
+
+        // viewport size
+        var viewport_width = window.innerWidth
+        var viewport_height = window.innerHeight
+
+        //document size
+        const page_dims = document.documentElement.getBoundingClientRect()
+        const page_width = page_dims.width
+        const page_height = page_dims.height
+        console.log('page_dims: ',page_dims)
+
+        let searchParam = `has_inner_text=${paramHasInnerText}&has_search_inner_text=${paramHasSearchInnerText}&num_search=${paramNumSearch}&has_button=${paramHasButton}&has_search_attr=${paramHasSearchAttr}&coordinates=${paramCoordinates}&viewport_width=${viewport_width}&viewport_height=${viewport_height}&page_width=${page_width}&page_height=${page_height}`
         
         console.log('searchParam: ',searchParam)
         return searchParam
@@ -268,16 +279,8 @@ console.log('document title: ', document.title)
 
 const searchCandidateList = new searchCandidates()
 
-// viewport size
-viewport_width = window.innerWidth
-viewport_height = window.innerHeight
 
-//document size
-page_dims = document.documentElement().getBoundingClientRect()
-page_width = page_dims.width
-page_height = page_dims.height
-console.log('page_dims: ',page_dims)
 
 // extract_search_features()
 console.log(searchCandidateList)
-fetch('http://127.0.0.1:5000/generate_summary?'+searchCandidateList.makeUrlParams()+'&viewport_width='+viewport_width+'&viewport_height='+viewport_height+'&page_width='+page_width+'&page_height=',page_height).then(response => response.text).then(result => console.log(result)).catch(error => console.log('error', error))
+fetch('http://127.0.0.1:5000/generate_summary?'+searchCandidateList.makeUrlParams()).then(response => response.text).then(result => console.log(result)).catch(error => console.log('error', error))

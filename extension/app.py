@@ -31,7 +31,7 @@ CORS(app)
 file_handler = FileHandler('log.txt')
 file_handler.setLevel(WARNING)
 
-def generate(text, model_path = r't5-model', tokenizer_path = r't5-model'):
+def output_summary(text, model_path = r't5-model', tokenizer_path = r't5-model'):
   tokenizer = T5Tokenizer.from_pretrained(model_path, return_tensors = 'pt')
   model = T5ForConditionalGeneration.from_pretrained(tokenizer_path, return_dict = True)
   model.eval()
@@ -39,13 +39,21 @@ def generate(text, model_path = r't5-model', tokenizer_path = r't5-model'):
   outputs = model.generate(input_ids)
   return tokenizer.decode(outputs[0]).strip('<pad>').strip('</s>').strip()
 
-def load(text):
+def generate_structured_summary(human_readable_position, element = 'search'):
+    print('hrpos: ',human_readable_position)
+    print('hrpos replaced _: ',human_readable_position[0].replace('_',' ').replace('-',' '))
+    return f"{element} | location | {human_readable_position[0].replace('_',' ').replace('-',' ')} && {element} | near  | {human_readable_position[1].replace('_',' ').replace('-',' ')}"
+
+def add_structured_summary(feature_df):
     ''' Takes in html page and load it's content and return objects as structured data.'''
+    # for col in ['action','human_readable_position']:
+    #         element_values['model_input'] += f'{element_values["subject"]} | {col} | {element_values[col]} &&'
+    #     element_values['model_input'] = element_values['model_input'].strip('&&').strip()
     # structured_data = 'animals | action | filter && animals | location | center'
     # structured_data = 'Hotels | action | sort && Hotels | human_readable_position | top-left'.replace('_',' ').replace('-',' ')
-    structured_data = text
-    print(structured_data)
-    return structured_data
+    feature_df['structured_summary_item'] = feature_df['human_readable_position'].map(generate_structured_summary)
+    print(feature_df)
+    return feature_df
 
 # @app.route('/')
 def speak(text = 'Hotels | action | sort && Hotels | human_readable_position | top-left'):
@@ -68,49 +76,55 @@ def speak(text = 'Hotels | action | sort && Hotels | human_readable_position | t
 
 def classify(feature_df, filename=r'classifier-models\search_model.sav'):
     classifier_model = pickle.load(open(filename,'rb'))
-    coordinates = feature_df.pop('coordinates')
-    feature_df['predictions'] = classifier_model.predict(feature_df.values)
+    # coordinates = feature_df.pop('coordinates')
+    feature_df['predictions'] = classifier_model.predict(feature_df[feature_df.columns[:-1]].values)
     # print('predictions:\n',feature_df["predictions"],'\n\ncoordinates:\n',coordinates)
     print(feature_df)
+    feature_df = feature_df[feature_df['predictions'] == 1]
     return feature_df
 
-####Modify the function
-def find_element_region(element, viewport_dims_coords): # replace element with dataframe and viewport_dims_coords with page_size
-    ''' Find in which region of the viewport, an element is found '''
+def find_element_center(element_coords):
+    return {'x' : int(element_coords[0]+abs(element_coords[0] - element_coords[2]) / 2), 'y' : int(element_coords[1] + abs(element_coords[1] - element_coords[3]) / 2)}
+    
+def find_element_region(element_coords, page_size):
+    ''' Find in which region of the webpage, an element is found '''
     region = {'left' : False,'right' : False, 'top' : False, 'bottom' : False} 
     reference_proximity = {'closer_to_center_x' : False, 'closer_to_center_y' : False, 'closer_to_right_end' : False, 'closer_to_left_end' : False,
     'closer_to_top' : False, 'closer_to_bottom' : False}
-    element_center = find_element_center_coords(element, viewport_dims_coords)
-    if element_center['x'] < viewport_dims_coords['viewport_center']['x']:
+    print('element_coords: ',element_coords)
+    element_center = find_element_center(element_coords)
+    page_center = {'x' : int(page_size[0] / 2), 'y' : int(page_size[1] / 2)}
+    if element_center['x'] < page_center['x']:
         region['left'] = True
-    if element_center['x'] > viewport_dims_coords['viewport_center']['x']:
+    if element_center['x'] > page_center['x']:
         region['right'] = True
-    if element_center['y'] < viewport_dims_coords['viewport_center']['y']:
+    if element_center['y'] < page_center['y']:
         region['top'] = True
-    if element_center['y'] > viewport_dims_coords['viewport_center']['y']:
+    if element_center['y'] > page_center['y']:
         region['bottom'] = True
 
-    if abs(element_center['x'] - viewport_dims_coords['viewport_center']['x']) < (viewport_dims_coords['viewport_center']['x'] / 2):
+    if abs(element_center['x'] - page_center['x']) < (page_center['x'] / 2):
         reference_proximity['closer_to_center_x'] = True # if element is close to center horizontally.
     else:
-        if (element_center['x'] - viewport_dims_coords['viewport_center']['x']) > 0:
+        if (element_center['x'] - page_center['x']) > 0:
             reference_proximity['closer_to_right_end'] = True
-        elif (element_center['x'] - viewport_dims_coords['viewport_center']['x']) < 0:
+        elif (element_center['x'] - page_center['x']) < 0:
             reference_proximity['closer_to_left_end'] = True
     
-    if abs(element_center['y'] - viewport_dims_coords['viewport_center']['y']) < (viewport_dims_coords['viewport_center']['y'] / 2):
+    if abs(element_center['y'] - page_center['y']) < (page_center['y'] / 2):
         reference_proximity['closer_to_center_y'] = True # if element is close to center vertically.
     else:
-        if (element_center['y'] - viewport_dims_coords['viewport_center']['y']) > 0:
+        if (element_center['y'] - page_center['y']) > 0:
             reference_proximity['closer_to_bottom'] = True
-        elif (element_center['y'] - viewport_dims_coords['viewport_center']['y']) < 0:
+        elif (element_center['y'] - page_center['y']) < 0:
             reference_proximity['closer_to_top'] = True
-    return region, reference_proximity
+    print('inner region: ',region)
+    print('inner prox: ',reference_proximity)
+    return (region, reference_proximity)
 
-####Modify the function
-def find_human_readable_position(element, chrome):
+def find_human_readable_position(element_coords, page_size):
     '''returns position in human-friendly format.'''
-    region, reference_proximity = find_element_region(element, find_viewport_dims_coords(chrome))
+    region, reference_proximity = find_element_region(element_coords, page_size)
     position = ''
     if region['top']:
         position += '_top'
@@ -139,6 +153,7 @@ def find_human_readable_position(element, chrome):
         close_reference += '_right'
     return position.strip('_'), close_reference.strip('_')
 
+
 @app.route('/generate_summary/')
 def generate_summary(features = ['has_inner_text', 'has_search_inner_text', 'num_search', 'has_button', 'has_search_attr', 'coordinates']):
     # driver = webdriver.Chrome()
@@ -159,8 +174,8 @@ def generate_summary(features = ['has_inner_text', 'has_search_inner_text', 'num
     # text = request.args['text']
     
     feature_dict = {feature: request.args.get(feature) for feature in features}
-    view_port_size = (request.args.get('viewport_width'), request.args.get('viewport_height'))
-    page_size = (request.args.get('page_width'), request.args.get('page_height'))
+    view_port_size = (float(request.args.get('viewport_width')), float(request.args.get('viewport_height')))
+    page_size = (float(request.args.get('page_width')), float(request.args.get('page_height')))
     print('feature_dict: ',feature_dict)
     print('len(feature_dict): ',len(feature_dict))
     for k in feature_dict.keys():
@@ -179,6 +194,19 @@ def generate_summary(features = ['has_inner_text', 'has_search_inner_text', 'num
     # print('info:')
     # print(feature_df.info())
     feature_df = classify(feature_df)
+    # feature_df[['region']]
+    region = feature_df['coordinates'].map(lambda c: find_element_region(c, page_size))
+    print('region: ',region)
+    feature_df['region'], feature_df['reference_proximity'] = region.str[0], region.str[1]
+    
+    feature_df['human_readable_position'] = feature_df['coordinates'].map(lambda row: find_human_readable_position(row, page_size))
+    # print('reference_proximity')
+    print(feature_df.head())
+    feature_df = add_structured_summary(feature_df)
+    feature_df['generated'] = feature_df['structured_summary_item'].map(output_summary)
+    feature_df['generated'].map(speak)
+    # print(feature_df.info())
+    # feature_df = feature_df.assign(region = lambda row: find_element_region(row['coordinates'].values, page_size))
     text = 'generate_summary() called.'
     # for text in ['Hotels | action | search && Hotels | human_readable_position | top', 'Hotels | action | sort && Hotels | human_readable_position | top-right', 'Hotels | action | filter && Hotels | human_readable_position | left', 'Results | action | discover && Results | location | center-bottom-right']:
     #     speak(generate(load(text)))
