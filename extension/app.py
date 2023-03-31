@@ -71,9 +71,73 @@ def classify(feature_df, filename=r'classifier-models\search_model.sav'):
     coordinates = feature_df.pop('coordinates')
     feature_df['predictions'] = classifier_model.predict(feature_df.values)
     # print('predictions:\n',feature_df["predictions"],'\n\ncoordinates:\n',coordinates)
-    print(feature_df.head())
+    print(feature_df)
     return feature_df
 
+####Modify the function
+def find_element_region(element, viewport_dims_coords): # replace element with dataframe and viewport_dims_coords with page_size
+    ''' Find in which region of the viewport, an element is found '''
+    region = {'left' : False,'right' : False, 'top' : False, 'bottom' : False} 
+    reference_proximity = {'closer_to_center_x' : False, 'closer_to_center_y' : False, 'closer_to_right_end' : False, 'closer_to_left_end' : False,
+    'closer_to_top' : False, 'closer_to_bottom' : False}
+    element_center = find_element_center_coords(element, viewport_dims_coords)
+    if element_center['x'] < viewport_dims_coords['viewport_center']['x']:
+        region['left'] = True
+    if element_center['x'] > viewport_dims_coords['viewport_center']['x']:
+        region['right'] = True
+    if element_center['y'] < viewport_dims_coords['viewport_center']['y']:
+        region['top'] = True
+    if element_center['y'] > viewport_dims_coords['viewport_center']['y']:
+        region['bottom'] = True
+
+    if abs(element_center['x'] - viewport_dims_coords['viewport_center']['x']) < (viewport_dims_coords['viewport_center']['x'] / 2):
+        reference_proximity['closer_to_center_x'] = True # if element is close to center horizontally.
+    else:
+        if (element_center['x'] - viewport_dims_coords['viewport_center']['x']) > 0:
+            reference_proximity['closer_to_right_end'] = True
+        elif (element_center['x'] - viewport_dims_coords['viewport_center']['x']) < 0:
+            reference_proximity['closer_to_left_end'] = True
+    
+    if abs(element_center['y'] - viewport_dims_coords['viewport_center']['y']) < (viewport_dims_coords['viewport_center']['y'] / 2):
+        reference_proximity['closer_to_center_y'] = True # if element is close to center vertically.
+    else:
+        if (element_center['y'] - viewport_dims_coords['viewport_center']['y']) > 0:
+            reference_proximity['closer_to_bottom'] = True
+        elif (element_center['y'] - viewport_dims_coords['viewport_center']['y']) < 0:
+            reference_proximity['closer_to_top'] = True
+    return region, reference_proximity
+
+####Modify the function
+def find_human_readable_position(element, chrome):
+    '''returns position in human-friendly format.'''
+    region, reference_proximity = find_element_region(element, find_viewport_dims_coords(chrome))
+    position = ''
+    if region['top']:
+        position += '_top'
+    elif region['bottom']:
+        position += '_bottom'
+    
+    if region['right']:
+        position += '_right'
+    elif region['left']:
+        position += '_left'
+    
+    close_reference = ''
+    
+    if reference_proximity['closer_to_top']:
+        close_reference += '_top'
+    elif reference_proximity['closer_to_bottom']:
+        close_reference += '_bottom'
+
+    if reference_proximity['closer_to_center_y']:
+        if reference_proximity['closer_to_center_x']:
+            close_reference += '_center'
+
+    if reference_proximity['closer_to_left_end']:
+        close_reference += '_left'
+    elif reference_proximity['closer_to_right_end']:
+        close_reference += '_right'
+    return position.strip('_'), close_reference.strip('_')
 
 @app.route('/generate_summary/')
 def generate_summary(features = ['has_inner_text', 'has_search_inner_text', 'num_search', 'has_button', 'has_search_attr', 'coordinates']):
@@ -95,6 +159,8 @@ def generate_summary(features = ['has_inner_text', 'has_search_inner_text', 'num
     # text = request.args['text']
     
     feature_dict = {feature: request.args.get(feature) for feature in features}
+    view_port_size = (request.args.get('viewport_width'), request.args.get('viewport_height'))
+    page_size = (request.args.get('page_width'), request.args.get('page_height'))
     print('feature_dict: ',feature_dict)
     print('len(feature_dict): ',len(feature_dict))
     for k in feature_dict.keys():

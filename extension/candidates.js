@@ -44,7 +44,7 @@ class searchCandidates {
 
     generateCoordinates(item) {
         let temp_coordinates = item.getBoundingClientRect()
-        return [temp_coordinates.left, temp_coordinates.top, temp_coordinates.right, temp_coordinates.bottom, temp_coordinates.height, temp_coordinates.width]
+        return [temp_coordinates.left + window.scrollX, temp_coordinates.top + window.scrollY, temp_coordinates.right + window.scrollX, temp_coordinates.bottom + window.scrollY, temp_coordinates.height, temp_coordinates.width]
     }
 
     makeUrlParams(){
@@ -161,13 +161,123 @@ class searchCandidates {
         }   
     }
 };
+class filterCandidates {
+    constructor (){
+        this.has_checkbox_list = []
+        this.num_links = []
+        this.num_inputs = []
+        this.all_child_links_valid = []
+        this.has_button_list = []
+        this.coordinates = []
+        this.extract_filter_features()
+    }
+
+    push(item, has_inner_text, has_search_inner_text, num_search, has_button, has_search_attr){
+        console.log('pushed: ', item, 'has_inner_text: ', has_inner_text, ' has_search_inner_text: ',has_search_inner_text, 'num_search: ', num_search, has_button, 'has_search_attr: ', has_search_attr)
+        this.has_checkbox_list.push(has_checkbox_list? 1 : 0)
+        this.has_search_inner_text.push(has_search_inner_text? 1 : 0)
+        this.num_search.push(num_search)
+        this.has_button.push(has_button? 1 : 0)
+        this.has_search_attr.push(has_search_attr? 1 : 0)
+        this.coordinates.push(this.generateCoordinates(item))
+    }
+    pop(){
+        this.has_inner_text.pop()
+        this.has_search_inner_text.pop()
+        this.num_search.pop()
+        this.has_button.pop()
+        this.has_search_attr.pop()
+        this.coordinates.pop()
+    }
+
+    generateCoordinates(item) {
+        let temp_coordinates = item.getBoundingClientRect()
+        return [temp_coordinates.left + window.scrollX, temp_coordinates.top + window.scrollY, temp_coordinates.right + window.scrollX, temp_coordinates.bottom + window.scrollY, temp_coordinates.height, temp_coordinates.width]
+    }
+
+    makeUrlParams(){
+        // Prepare the attributes into url parameters
+        let inner_array_separator = ','
+        let outer_array_separator = '+'
+        
+        let paramCoordinates = this.coordinates.map(item => item.join(inner_array_separator)) // Form string with each inner-array joined by ','
+        console.log('this.coordinates.map: ', paramCoordinates)
+        paramCoordinates = paramCoordinates.join(outer_array_separator) // Form string with each item in the outer array separated by '+'
+        console.log('paramCoordinates: ', paramCoordinates)
+        let paramHasInnerText = this.has_inner_text.join(outer_array_separator)
+        let paramHasSearchInnerText = this.has_search_inner_text.join(outer_array_separator)
+        let paramNumSearch = this.num_search.join(outer_array_separator)
+        let paramHasButton = this.has_button.join(outer_array_separator)
+        let paramHasSearchAttr = this.has_search_attr.join(outer_array_separator)
+        let searchParam = `has_inner_text=${paramHasInnerText}&has_search_inner_text=${paramHasSearchInnerText}&num_search=${paramNumSearch}&has_button=${paramHasButton}&has_search_attr=${paramHasSearchAttr}&coordinates=${paramCoordinates}`
+        
+        console.log('searchParam: ',searchParam)
+        return searchParam
+
+    }
+
+    extract_filter_features = function () {
+        'Checks if there is a search keyword in attribute values.'
+        const elements = {
+            divs : document.querySelectorAll('div'),
+            nav : document.querySelectorAll('nav'),
+            li : document.querySelectorAll('li'),
+            ul : document.querySelectorAll('ul'),
+            span : document.querySelectorAll('span'),
+            section : document.querySelectorAll('section'),
+            button : document.querySelectorAll('button'),
+            tr : document.querySelectorAll('tr'),
+            footer : document.querySelectorAll('footer'),
+            a : document.querySelectorAll('a'),
+            pagination : document.querySelectorAll('pagination'),
+            b : document.querySelectorAll('b')
+        }
+
+        for (const element in elements) {
+            for (const item in element) {
+                let has_checkbox_list = false
+                let num_links = 0
+                let num_inputs = 0
+                let has_url_list = false
+                let has_button_list = false
+
+                // has_checkbox_list
+                if (item.querySelectorAll('input[type=checkbox]').length > 1) {
+                    has_checkbox_list = true
+                }
+                // num_links
+                num_links = element.querySelectorAll('a').length
+                // has_url_list
+                if (num_links > 1) {
+                    has_url_list = true
+                }
+
+                // num_inputs
+                num_inputs = element.querySelectorAll('input').length
+
+                // has_button_list
+                if (element.querySelectorAll('button').length > 1 || element.querySelectorAll('input[type=button]').length > 1 || element.querySelectorAll('input[type=submit]').length > 1) {
+                    has_button_list = true
+                }
+            }
+        }
+    }
+};
 
 console.log('document title: ', document.title)
 
 const searchCandidateList = new searchCandidates()
 
+// viewport size
+viewport_width = window.innerWidth
+viewport_height = window.innerHeight
 
+//document size
+page_dims = document.documentElement().getBoundingClientRect()
+page_width = page_dims.width
+page_height = page_dims.height
+console.log('page_dims: ',page_dims)
 
 // extract_search_features()
 console.log(searchCandidateList)
-fetch('http://127.0.0.1:5000/generate_summary?'+searchCandidateList.makeUrlParams()).then(response => response.text).then(result => console.log(result)).catch(error => console.log('error', error))
+fetch('http://127.0.0.1:5000/generate_summary?'+searchCandidateList.makeUrlParams()+'&viewport_width='+viewport_width+'&viewport_height='+viewport_height+'&page_width='+page_width+'&page_height=',page_height).then(response => response.text).then(result => console.log(result)).catch(error => console.log('error', error))
