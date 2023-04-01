@@ -3,28 +3,45 @@ const url = window.location.href
 const json = JSON.stringify({'url' : url})
 const link = document.createElement('a')
 console.log('json: ',json)
-// import searchCandidates from "./candidates.js"
-// var file = new Blob([json], {type : 'json'})
-// link.href = URL.createObjectURL(file)
-// link.download = 'url.json'
-// link.click()
-// URL.revokeObjectURL(link.href)
 
-// extract the features, load in an array and send them as url arguments
-// make a searchCandidates object and store the features
 
-class searchCandidates {
+class Candidates {
+
+    generateCoordinates = function(item) {
+        let temp_coordinates = item.getBoundingClientRect()
+        return [temp_coordinates.left + window.scrollX, temp_coordinates.top + window.scrollY, temp_coordinates.right + window.scrollX, temp_coordinates.bottom + window.scrollY, temp_coordinates.height, temp_coordinates.width]
+    }
+
+    extractFeatures = function() {
+        throw new Error('Cannot instantiate abstract class method.')
+    }
+
+    push = function() {
+        throw new Error('Cannot instantiate abstract class method.')
+    }
+
+    makeUrlParams = function() {
+        throw new Error('Cannot instantiate abstract class method.')
+    }
+
+    makeCsv = function() {
+        throw new Error('Cannot instantiate abstract class method.')
+    }
+}
+
+class searchCandidates extends Candidates {
     constructor (){
+        super()
         this.has_inner_text = []
         this.has_search_inner_text = []
         this.num_search = []
         this.has_button = []
         this.has_search_attr = []
         this.coordinates = []
-        this.extract_search_features()
+        this.extractFeatures()
     }
 
-    push(item, has_inner_text, has_search_inner_text, num_search, has_button, has_search_attr){
+    push = function(item, has_inner_text, has_search_inner_text, num_search, has_button, has_search_attr) {
         console.log('pushed: ', item, 'has_inner_text: ', has_inner_text, ' has_search_inner_text: ',has_search_inner_text, 'num_search: ', num_search, has_button, 'has_search_attr: ', has_search_attr)
         this.has_inner_text.push(has_inner_text? 1 : 0)
         this.has_search_inner_text.push(has_search_inner_text? 1 : 0)
@@ -33,7 +50,7 @@ class searchCandidates {
         this.has_search_attr.push(has_search_attr? 1 : 0)
         this.coordinates.push(this.generateCoordinates(item))
     }
-    pop(){
+    pop = function(){
         this.has_inner_text.pop()
         this.has_search_inner_text.pop()
         this.num_search.pop()
@@ -42,45 +59,44 @@ class searchCandidates {
         this.coordinates.pop()
     }
 
-    generateCoordinates(item) {
-        let temp_coordinates = item.getBoundingClientRect()
-        return [temp_coordinates.left + window.scrollX, temp_coordinates.top + window.scrollY, temp_coordinates.right + window.scrollX, temp_coordinates.bottom + window.scrollY, temp_coordinates.height, temp_coordinates.width]
-    }
+    
 
-    makeUrlParams(){
+    makeUrlParams = function(){
         // Prepare the attributes into url parameters
         let inner_array_separator = ','
         let outer_array_separator = '+'
         
         let paramCoordinates = this.coordinates.map(item => item.join(inner_array_separator)) // Form string with each inner-array joined by ','
-        console.log('this.coordinates.map: ', paramCoordinates)
+        // console.log('this.coordinates.map: ', paramCoordinates)
         paramCoordinates = paramCoordinates.join(outer_array_separator) // Form string with each item in the outer array separated by '+'
-        console.log('paramCoordinates: ', paramCoordinates)
+        // console.log('paramCoordinates: ', paramCoordinates)
         let paramHasInnerText = this.has_inner_text.join(outer_array_separator)
         let paramHasSearchInnerText = this.has_search_inner_text.join(outer_array_separator)
         let paramNumSearch = this.num_search.join(outer_array_separator)
         let paramHasButton = this.has_button.join(outer_array_separator)
         let paramHasSearchAttr = this.has_search_attr.join(outer_array_separator)
 
-        // viewport size
-        var viewport_width = window.innerWidth
-        var viewport_height = window.innerHeight
-
-        //document size
-        const page_dims = document.documentElement.getBoundingClientRect()
-        const page_width = page_dims.width
-        const page_height = page_dims.height
-        console.log('page_dims: ',page_dims)
-
-        let searchParam = `has_inner_text=${paramHasInnerText}&has_search_inner_text=${paramHasSearchInnerText}&num_search=${paramNumSearch}&has_button=${paramHasButton}&has_search_attr=${paramHasSearchAttr}&coordinates=${paramCoordinates}&viewport_width=${viewport_width}&viewport_height=${viewport_height}&page_width=${page_width}&page_height=${page_height}`
+        let searchParam = `has_inner_text=${paramHasInnerText}&has_search_inner_text=${paramHasSearchInnerText}&num_search=${paramNumSearch}&has_button=${paramHasButton}&has_search_attr=${paramHasSearchAttr}&coordinates=${paramCoordinates}`
         
         console.log('searchParam: ',searchParam)
         return searchParam
 
     }
 
-    extract_search_features = function () {
-        'Checks if there is a search keyword in attribute values.'
+    makeCsv = function(csv_string = `has_inner_text, has_search_inner_text, num_search, has_button, has_search_attr`, filename='search_features.csv') {
+        for (let i=0; i < this.has_inner_text.length; i++) {
+            csv_string += `${this.has_inner_text[i]}, ${this.has_search_inner_text[i]}, ${this.num_search[i]}, ${this.has_button[i]}, ${this.has_search_attr[i]}`
+        }
+        var file = new Blob([json], {type : 'json'})
+        link.href = URL.createObjectURL(file)
+        link.download = 'search_features.csv'
+        link.click()
+        URL.revokeObjectURL(link.href)
+        
+    }
+
+    extractFeatures = function () {
+        let csv_string = ``
         for (const item of document.querySelectorAll('form')) {
             let has_search_attr = false
             let has_button = false
@@ -172,41 +188,33 @@ class searchCandidates {
         }   
     }
 };
-class filterCandidates {
+
+class filterCandidates extends Candidates {
     constructor (){
+        super()
         this.has_checkbox_list = []
         this.num_links = []
         this.num_inputs = []
         this.all_child_links_valid = []
         this.has_button_list = []
         this.coordinates = []
-        this.extract_filter_features()
+        this.extractFeatures()
     }
 
-    push(item, has_inner_text, has_search_inner_text, num_search, has_button, has_search_attr){
-        console.log('pushed: ', item, 'has_inner_text: ', has_inner_text, ' has_search_inner_text: ',has_search_inner_text, 'num_search: ', num_search, has_button, 'has_search_attr: ', has_search_attr)
+    push = function(item, has_checkbox_list, num_links, num_inputs, has_button_list, all_child_links_valid) {
+        console.log('pushed: ', item, 'has_checkbox_list: ', has_checkbox_list, ' num_links: ',num_links, 'num_inputs: ', num_inputs, 'has_button_list: ',has_button_list, 'all_child_links_valid: ', all_child_links_valid)
         this.has_checkbox_list.push(has_checkbox_list? 1 : 0)
-        this.has_search_inner_text.push(has_search_inner_text? 1 : 0)
-        this.num_search.push(num_search)
-        this.has_button.push(has_button? 1 : 0)
-        this.has_search_attr.push(has_search_attr? 1 : 0)
+        this.num_links.push(num_links)
+        this.num_inputs.push(num_inputs)
+        this.has_button_list.push(has_button_list? 1 : 0)
+        this.all_child_links_valid.push(all_child_links_valid? 1 : 0)
         this.coordinates.push(this.generateCoordinates(item))
     }
-    pop(){
-        this.has_inner_text.pop()
-        this.has_search_inner_text.pop()
-        this.num_search.pop()
-        this.has_button.pop()
-        this.has_search_attr.pop()
-        this.coordinates.pop()
-    }
+ 
 
-    generateCoordinates(item) {
-        let temp_coordinates = item.getBoundingClientRect()
-        return [temp_coordinates.left + window.scrollX, temp_coordinates.top + window.scrollY, temp_coordinates.right + window.scrollX, temp_coordinates.bottom + window.scrollY, temp_coordinates.height, temp_coordinates.width]
-    }
+    
 
-    makeUrlParams(){
+    makeUrlParams = function(){
         // Prepare the attributes into url parameters
         let inner_array_separator = ','
         let outer_array_separator = '+'
@@ -215,19 +223,31 @@ class filterCandidates {
         console.log('this.coordinates.map: ', paramCoordinates)
         paramCoordinates = paramCoordinates.join(outer_array_separator) // Form string with each item in the outer array separated by '+'
         console.log('paramCoordinates: ', paramCoordinates)
-        let paramHasInnerText = this.has_inner_text.join(outer_array_separator)
-        let paramHasSearchInnerText = this.has_search_inner_text.join(outer_array_separator)
-        let paramNumSearch = this.num_search.join(outer_array_separator)
-        let paramHasButton = this.has_button.join(outer_array_separator)
-        let paramHasSearchAttr = this.has_search_attr.join(outer_array_separator)
-        let searchParam = `has_inner_text=${paramHasInnerText}&has_search_inner_text=${paramHasSearchInnerText}&num_search=${paramNumSearch}&has_button=${paramHasButton}&has_search_attr=${paramHasSearchAttr}&coordinates=${paramCoordinates}`
+        let paramHasCheckboxList = this.has_checkbox_list.join(outer_array_separator)
+        let paramNumLinks = this.num_links.join(outer_array_separator)
+        let paramNumInputs = this.num_inputs.join(outer_array_separator)
+        let paramHasButtonList = this.has_button_list.join(outer_array_separator)
+        let paramAllChildLinksValid = this.all_child_links_valid.join(outer_array_separator)
+        let searchParam = `has_checkbox_list=${paramHasCheckboxList}&num_links=${paramNumLinks}&num_inputs=${paramNumInputs}&has_button_list=${paramHasButtonList}&all_child_links_valid=${paramAllChildLinksValid}&coordinates=${paramCoordinates}`
         
         console.log('searchParam: ',searchParam)
         return searchParam
 
     }
 
-    extract_filter_features = function () {
+    makeCsv = function(csv_string = `has_checkbox_list, num_links, num_inputs, has_button_list, all_child_links_valid\r\n`, filename='search_features.csv') {
+        for (let i=0; i < this.has_inner_text.length; i++) {
+            csvString += `${this.has_checkbox_list[i]}, ${this.num_links[i]}, ${this.num_inputs[i]}, ${this.has_button_list[i]}, ${this.all_child_links_valid[i]}\r\n`
+        }
+        var file = new Blob([csvString], {type : 'text/csv;charset=utf-8;'})
+        link.href = URL.createObjectURL(file)
+        link.download = 'search_features.csv'
+        link.click()
+        URL.revokeObjectURL(link.href)
+        
+    }
+
+    extractFeatures = function () {
         'Checks if there is a search keyword in attribute values.'
         const elements = {
             divs : document.querySelectorAll('div'),
@@ -245,11 +265,12 @@ class filterCandidates {
         }
 
         for (const element in elements) {
-            for (const item in element) {
+            console.log('element: ',elements[element],' elements: ',elements)
+            for (const item of elements[element]) {
                 let has_checkbox_list = false
                 let num_links = 0
                 let num_inputs = 0
-                let has_url_list = false
+                let all_child_links_valid = true
                 let has_button_list = false
 
                 // has_checkbox_list
@@ -257,30 +278,50 @@ class filterCandidates {
                     has_checkbox_list = true
                 }
                 // num_links
-                num_links = element.querySelectorAll('a').length
-                // has_url_list
-                if (num_links > 1) {
-                    has_url_list = true
+                num_links = item.querySelectorAll('a').length
+
+                // all_child_links_valid
+                for (const a of item.querySelectorAll('a')) {
+                    if (!a.getAttribute('href')) {
+                        all_child_links_valid = false
+                    }
                 }
 
                 // num_inputs
-                num_inputs = element.querySelectorAll('input').length
+                num_inputs = item.querySelectorAll('input').length
 
                 // has_button_list
-                if (element.querySelectorAll('button').length > 1 || element.querySelectorAll('input[type=button]').length > 1 || element.querySelectorAll('input[type=submit]').length > 1) {
+                if (item.querySelectorAll('button').length > 1 || item.querySelectorAll('input[type=button]').length > 1 || item.querySelectorAll('input[type=submit]').length > 1) {
                     has_button_list = true
                 }
+                this.push(item, has_checkbox_list=has_checkbox_list, num_links=num_links, num_inputs=num_inputs, has_button_list=has_button_list, all_child_links_valid=all_child_links_valid)
             }
         }
     }
 };
 
-console.log('document title: ', document.title)
-
 const searchCandidateList = new searchCandidates()
+const filterCandidatesList = new filterCandidates()
 
+ // NOTE: viewport and document sizes should only be added to parameters once.
+// viewport size
+viewport_width = window.innerWidth
+viewport_height = window.innerHeight
 
+//document size
+page_dims = document.documentElement.getBoundingClientRect()
+page_width = page_dims.width
+page_height = page_dims.height
+console.log('page_dims: ',page_dims)
 
-// extract_search_features()
-console.log(searchCandidateList)
-fetch('http://127.0.0.1:5000/generate_summary?'+searchCandidateList.makeUrlParams()).then(response => response.text).then(result => console.log(result)).catch(error => console.log('error', error))
+searchCandidateList.makeCsv()
+filterCandidatesList.makeCsv()
+// extractFeatures()
+// console.log(searchCandidateList)
+// var file = new Blob([json], {type : 'json'})
+// link.href = URL.createObjectURL(file)
+// link.download = 'features.json'
+// link.click()
+// URL.revokeObjectURL(link.href)
+
+fetch('http://127.0.0.1:5000/generate_summary?'+searchCandidateList.makeUrlParams()+filterCandidatesList.makeUrlParams()+`&viewport_width=${this.viewport_width}&viewport_height=${viewport_height}&page_width=${page_width}&page_height=${page_height}`, {method: 'POST'}).then(response => response.text).then(result => console.log(result)).catch(error => console.log('error', error))

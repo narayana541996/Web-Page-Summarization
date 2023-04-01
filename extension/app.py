@@ -154,8 +154,9 @@ def find_human_readable_position(element_coords, page_size):
     return position.strip('_'), close_reference.strip('_')
 
 
-@app.route('/generate_summary/')
-def generate_summary(features = ['has_inner_text', 'has_search_inner_text', 'num_search', 'has_button', 'has_search_attr', 'coordinates']):
+@app.route('/generate_summary/', methods = ['POST'])
+def generate_summary(search_features = ['has_inner_text', 'has_search_inner_text', 'num_search', 'has_button', 'has_search_attr', 'coordinates'],
+                     filter_features = ['has_checkbox_list', 'num_links', 'num_inputs', 'all_child_links_valid', 'has_button_list', 'coordinates']):
     # driver = webdriver.Chrome()
     # url = driver.command_executor._url
     # print(url)
@@ -171,46 +172,46 @@ def generate_summary(features = ['has_inner_text', 'has_search_inner_text', 'num
     # item = 'Address and search bar'
     # url = chrome.top_window().child_window(title = item, control_type = 'Edit').get_value()
     # print(url)
-    # text = request.args['text']
-    
-    feature_dict = {feature: request.args.get(feature) for feature in features}
-    view_port_size = (float(request.args.get('viewport_width')), float(request.args.get('viewport_height')))
-    page_size = (float(request.args.get('page_width')), float(request.args.get('page_height')))
-    print('feature_dict: ',feature_dict)
-    print('len(feature_dict): ',len(feature_dict))
-    for k in feature_dict.keys():
-        print(k,':',len(feature_dict[k]),'\n', feature_dict[k])
-        feature_dict[k] = feature_dict[k].split()
-        if not feature_dict[k][0].isnumeric():
-            feature_dict[k] = [list(map(float, row.split(','))) for row in feature_dict[k]]
-        else:
-            feature_dict[k] = list(map(float, feature_dict[k]))
-    
-
-        print(k,':',len(feature_dict[k]), feature_dict[k][0])
+    # text = request.form['text']
+    for features in search_features,filter_features:
+        feature_dict = {feature: request.form.get(feature) for feature in features}
+        view_port_size = (float(request.form.get('viewport_width')), float(request.form.get('viewport_height')))
+        page_size = (float(request.form.get('page_width')), float(request.form.get('page_height')))
+        print('feature_dict: ',feature_dict)
+        print('len(feature_dict): ',len(feature_dict))
+        for k in feature_dict.keys():
+            print(k,':',len(feature_dict[k]),'\n', feature_dict[k])
+            feature_dict[k] = feature_dict[k].split()
+            if not feature_dict[k][0].isnumeric():
+                feature_dict[k] = [list(map(float, row.split(','))) for row in feature_dict[k]]
+            else:
+                feature_dict[k] = list(map(float, feature_dict[k]))
         
-    feature_df = pd.DataFrame(feature_dict)
-    print(feature_df.head())
-    # print('info:')
-    # print(feature_df.info())
-    feature_df = classify(feature_df)
-    # feature_df[['region']]
-    region = feature_df['coordinates'].map(lambda c: find_element_region(c, page_size))
-    print('region: ',region)
-    feature_df['region'], feature_df['reference_proximity'] = region.str[0], region.str[1]
-    
-    feature_df['human_readable_position'] = feature_df['coordinates'].map(lambda row: find_human_readable_position(row, page_size))
-    # print('reference_proximity')
-    print(feature_df.head())
-    feature_df = add_structured_summary(feature_df)
-    feature_df['generated'] = feature_df['structured_summary_item'].map(output_summary)
-    feature_df['generated'].map(speak)
-    # print(feature_df.info())
-    # feature_df = feature_df.assign(region = lambda row: find_element_region(row['coordinates'].values, page_size))
-    text = 'generate_summary() called.'
-    # for text in ['Hotels | action | search && Hotels | human_readable_position | top', 'Hotels | action | sort && Hotels | human_readable_position | top-right', 'Hotels | action | filter && Hotels | human_readable_position | left', 'Results | action | discover && Results | location | center-bottom-right']:
-    #     speak(generate(load(text)))
-    return text
+
+            print(k,':',len(feature_dict[k]), feature_dict[k][0])
+            
+        feature_df = pd.DataFrame(feature_dict)
+        print(feature_df.head())
+        # print('info:')
+        # print(feature_df.info())
+        feature_df = classify(feature_df)
+        # feature_df[['region']]
+        region = feature_df['coordinates'].map(lambda c: find_element_region(c, page_size))
+        print('region: ',region)
+        feature_df['region'], feature_df['reference_proximity'] = region.str[0], region.str[1]
+        
+        feature_df['human_readable_position'] = feature_df['coordinates'].map(lambda row: find_human_readable_position(row, page_size))
+        # print('reference_proximity')
+        print(feature_df.head())
+        feature_df = add_structured_summary(feature_df)
+        feature_df['generated'] = feature_df['structured_summary_item'].map(output_summary)
+        feature_df['generated'].map(speak)
+        # print(feature_df.info())
+        # feature_df = feature_df.assign(region = lambda row: find_element_region(row['coordinates'].values, page_size))
+        text = 'generate_summary() called.'
+        # for text in ['Hotels | action | search && Hotels | human_readable_position | top', 'Hotels | action | sort && Hotels | human_readable_position | top-right', 'Hotels | action | filter && Hotels | human_readable_position | left', 'Results | action | discover && Results | location | center-bottom-right']:
+        #     speak(generate(load(text)))
+        return text
 
 
 # if __name__ == '__main__':
