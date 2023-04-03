@@ -173,6 +173,22 @@ def generate_summary(search_features = ['has_inner_text', 'has_search_inner_text
     # url = chrome.top_window().child_window(title = item, control_type = 'Edit').get_value()
     # print(url)
     # text = request.form['text']
+    # print('request.form: ',len(request.form))
+    # print('request.files: ',len(request.files))
+    # print('request.values: ',len(request.values))
+    # print('request.json: ',len(request.json))
+    # print('request.get_json: ',len(request.get_json(force=True)))
+    feature_json_dict = request.json
+    feature_df_dict = {} # {k : pd.DataFrame(feature_dict[k]) for k in feature_dict.keys()}
+    print('feature_df_dict: ',feature_json_dict['search'])
+    for k in feature_json_dict.keys():
+        feature_df_dict[k] = pd.DataFrame(feature_json_dict[k])
+        print('k:')
+        print('info:\n',feature_df_dict[k].info())
+        print('head:\n',feature_df_dict[k].head())
+    print('all keys: ',list(feature_df_dict.keys()))
+
+    ##### Update to work with the changed feature_dfs
     for features in search_features,filter_features:
         feature_dict = {feature: request.form.get(feature) for feature in features}
         view_port_size = (float(request.form.get('viewport_width')), float(request.form.get('viewport_height')))

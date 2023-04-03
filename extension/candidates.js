@@ -202,7 +202,7 @@ class filterCandidates extends Candidates {
     }
 
     push = function(item, has_checkbox_list, num_links, num_inputs, has_button_list, all_child_links_valid) {
-        console.log('pushed: ', item, 'has_checkbox_list: ', has_checkbox_list, ' num_links: ',num_links, 'num_inputs: ', num_inputs, 'has_button_list: ',has_button_list, 'all_child_links_valid: ', all_child_links_valid)
+        // console.log('pushed: ', item, 'has_checkbox_list: ', has_checkbox_list, ' num_links: ',num_links, 'num_inputs: ', num_inputs, 'has_button_list: ',has_button_list, 'all_child_links_valid: ', all_child_links_valid)
         this.has_checkbox_list.push(has_checkbox_list? 1 : 0)
         this.num_links.push(num_links)
         this.num_inputs.push(num_inputs)
@@ -235,10 +235,11 @@ class filterCandidates extends Candidates {
 
     }
 
-    makeCsv = function(csv_string = `has_checkbox_list, num_links, num_inputs, has_button_list, all_child_links_valid\r\n`, filename='search_features.csv') {
+    makeCsv = function(csvString = `has_checkbox_list, num_links, num_inputs, has_button_list, all_child_links_valid\r\n`, filename='filter_features.csv') {
         for (let i=0; i < this.has_inner_text.length; i++) {
             csvString += `${this.has_checkbox_list[i]}, ${this.num_links[i]}, ${this.num_inputs[i]}, ${this.has_button_list[i]}, ${this.all_child_links_valid[i]}\r\n`
         }
+        console.log(csvString)
         var file = new Blob([csvString], {type : 'text/csv;charset=utf-8;'})
         link.href = URL.createObjectURL(file)
         link.download = 'search_features.csv'
@@ -248,7 +249,6 @@ class filterCandidates extends Candidates {
     }
 
     extractFeatures = function () {
-        'Checks if there is a search keyword in attribute values.'
         const elements = {
             divs : document.querySelectorAll('div'),
             nav : document.querySelectorAll('nav'),
@@ -301,21 +301,24 @@ class filterCandidates extends Candidates {
 };
 
 const searchCandidateList = new searchCandidates()
-const filterCandidatesList = new filterCandidates()
+const filterCandidateList = new filterCandidates()
+data = {
+    search : searchCandidateList,
+    filter : filterCandidateList,
+    // viewport size
+    viewport_width : window.innerWidth,
+    viewport_height : window.innerHeight,
+    //document size
+    page_dims : document.documentElement.getBoundingClientRect()
 
- // NOTE: viewport and document sizes should only be added to parameters once.
-// viewport size
-viewport_width = window.innerWidth
-viewport_height = window.innerHeight
+}
 
-//document size
-page_dims = document.documentElement.getBoundingClientRect()
-page_width = page_dims.width
-page_height = page_dims.height
-console.log('page_dims: ',page_dims)
+console.log('data output: ',JSON.stringify(data))
+console.log('search output: ',JSON.stringify(searchCandidateList))
+console.log('filter output: ',JSON.stringify(filterCandidateList))
 
-searchCandidateList.makeCsv()
-filterCandidatesList.makeCsv()
+// searchCandidateList.makeCsv()
+// filterCandidatesList.makeCsv()
 // extractFeatures()
 // console.log(searchCandidateList)
 // var file = new Blob([json], {type : 'json'})
@@ -324,4 +327,6 @@ filterCandidatesList.makeCsv()
 // link.click()
 // URL.revokeObjectURL(link.href)
 
-fetch('http://127.0.0.1:5000/generate_summary?'+searchCandidateList.makeUrlParams()+filterCandidatesList.makeUrlParams()+`&viewport_width=${this.viewport_width}&viewport_height=${viewport_height}&page_width=${page_width}&page_height=${page_height}`, {method: 'POST'}).then(response => response.text).then(result => console.log(result)).catch(error => console.log('error', error))
+
+// replace data with the objects to be sent
+fetch('http://127.0.0.1:5000/generate_summary/', {method: 'POST', headers: {"content-Type" : "application/json"}, body: JSON.stringify(data)}).then(response => response.text).then(result => console.log('fetch result: ',result)).catch(error => console.log('error', error))
