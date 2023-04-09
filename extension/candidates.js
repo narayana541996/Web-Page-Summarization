@@ -42,7 +42,7 @@ class searchCandidates extends Candidates {
     }
 
     push = function(item, has_inner_text, has_search_inner_text, num_search, has_button, has_search_attr) {
-        console.log('pushed: ', item, 'has_inner_text: ', has_inner_text, ' has_search_inner_text: ',has_search_inner_text, 'num_search: ', num_search, has_button, 'has_search_attr: ', has_search_attr)
+        console.log('search pushed: ', item, 'has_inner_text: ', has_inner_text, ' has_search_inner_text: ',has_search_inner_text, 'num_search: ', num_search, has_button, 'has_search_attr: ', has_search_attr)
         this.has_inner_text.push(has_inner_text? 1 : 0)
         this.has_search_inner_text.push(has_search_inner_text? 1 : 0)
         this.num_search.push(num_search)
@@ -125,7 +125,7 @@ class searchCandidates extends Candidates {
             for (const child of item.querySelectorAll('*')){
                 for (const child_att of child.attributes) {
 
-                    console.log('child: ',child)
+                    // console.log('child: ',child)
                     if (child_att.value.toLowerCase().match('search')) {
                         // console.log('child: ',child)
                         // console.log('attribute: ',child_att)
@@ -151,8 +151,8 @@ class searchCandidates extends Candidates {
                 
 
                 if (child.attributes['aria-label'] != undefined) {
-                    console.log('child:',child)
-                    console.log('aria-label:',child.attributes['aria-label'].value)
+                    // console.log('child:',child)
+                    // console.log('aria-label:',child.attributes['aria-label'].value)
                     has_inner_text = true
                     if (child.attributes['aria-label'].value.toLowerCase().match('search')) {
                         has_search_inner_text = true
@@ -160,8 +160,8 @@ class searchCandidates extends Candidates {
                     }
                 }
                 if (child.attributes['placeholder'] != undefined) {
-                    console.log('child:',child)
-                    console.log('placeholder:',child.attributes['placeholder'].value)
+                    // console.log('child:',child)
+                    // console.log('placeholder:',child.attributes['placeholder'].value)
                     has_inner_text = true
                     if (child.attributes['placeholder'].value.toLowerCase().match('search')) {
                         has_search_inner_text = true
@@ -249,19 +249,25 @@ class filterCandidates extends Candidates {
     }
 
     extractFeatures = function () {
+        // function findOuterParent(element, parentElement) {
+        //     let closestParentElement = $(element).closest(parentElement)
+        //     let outerParentElement = $(closestParentElement).closest(parentElement)
+        //     if (closestParentElement.find('*') === outerParentElement.find('* : not(nth-child(1)'))
+        // }
         const elements = {
-            divs : document.querySelectorAll('div'),
-            nav : document.querySelectorAll('nav'),
-            li : document.querySelectorAll('li'),
-            ul : document.querySelectorAll('ul'),
-            span : document.querySelectorAll('span'),
-            section : document.querySelectorAll('section'),
-            button : document.querySelectorAll('button'),
-            tr : document.querySelectorAll('tr'),
-            footer : document.querySelectorAll('footer'),
-            a : document.querySelectorAll('a'),
-            pagination : document.querySelectorAll('pagination'),
-            b : document.querySelectorAll('b')
+            divs : document.querySelectorAll('div > nav, div > ul, div > a, div > dl'),
+            // nav : document.querySelectorAll('nav'),
+            // li : document.querySelectorAll('li'),
+            // ul : document.querySelectorAll('ul'),
+            span : document.querySelectorAll('span > nav, span > a, span > ul, span > dl'),
+            section : document.querySelectorAll('section > nav, section > ul, section > dl'),
+            form : document.querySelectorAll('form')
+            // button : document.querySelectorAll('button'),
+            // tr : document.querySelectorAll('tr'),
+            // footer : document.querySelectorAll('footer'),
+            // a : document.querySelectorAll('a'),
+            // pagination : document.querySelectorAll('pagination'),
+            // b : document.querySelectorAll('b')
         }
 
         for (const element in elements) {
@@ -300,22 +306,119 @@ class filterCandidates extends Candidates {
     }
 };
 
+class sortCandidates extends Candidates {
+    
+    constructor() {
+        super()
+        this.keyword_match = []
+        this.keyword_count = []
+        this.has_sort_text = []
+        this.num_option_tag = []
+        this.coordinates = []
+        this.extractFeatures()
+    }
+
+    push = function(item, keyword_match, keyword_count, has_sort_text, num_option_tag) {
+        console.log('sort pushed: ',keyword_match,' ',keyword_count,' ',has_sort_text,' ',num_option_tag)
+        this.keyword_match.push(keyword_match)
+        this.keyword_count.push(keyword_count)
+        this.has_sort_text.push(has_sort_text)
+        this.num_option_tag.push(num_option_tag)
+        this.coordinates.push(this.generateCoordinates(item))
+    }
+
+    extractFeatures = function() {
+
+        
+        const keywords = ['price', 'recommended', 'ratings', 'distance','time', 'most recent', 'best match', 'relevance', 'featured', 'new', 'highest']
+
+        
+        for (const item of document.querySelectorAll('select, ul')) {
+            let keyword_match = false
+            let keyword_count = 0
+            let has_sort_text = false
+            let num_option_tag = 0
+            // check inner text for keywords: price, recommended, ratings, distance, time
+            console.log('sort item: ',item)
+            // keyword_count = item.querySelectorAll('*: contains("Price" i), * : contains("Recommended" i), * : contains("Ratings" i), * : contains("Distance" i), * : contains("Time" i), * : contains("Most Recent" i), * : contains("Best Match" i), * : contains("Relevance" i), * : contains("Featured" i), * : contains("New" i), * : contains("Highest" i)').length
+            for (const inner_item of item.querySelectorAll('*')) {
+                if (keywords.includes(inner_item.innerText.toLowerCase())) {
+                    keyword_count += 1
+                }
+
+                // has_sort_text
+                if (inner_item.innerText.toLowerCase() === "sort") {
+                    has_sort_text = true
+                }
+            }
+            // keyword_match
+            keyword_match = keyword_count > 0
+            // for (const inner_item of item.querySelectorAll('*')){
+            //     if (inner_item.innerText.toLowerCase() === "sort") {
+            //         has_sort_text = true
+            //         break
+            //     }
+            // }
+            num_option_tag = item.querySelectorAll('li').length
+            this.push(item, keyword_count=keyword_count, keyword_match=keyword_match, has_sort_text=has_sort_text, num_option_tag=num_option_tag)
+        }
+    }
+}
+
+class pageCandidates extends Candidates {
+    constructor() {
+        this.num_buttons = []
+        this.num_links = []
+        this.num_common_url = []
+        this.num_numeric_nodes = [] // no. of nodes with only numbers as text
+        this.has_keyword = []
+        this.keyword_count = []
+        this.coordinates = []
+    }
+
+    push = function(item, num_buttons, num_links, num_common_url, num_numeric_nodes, has_keyword, keyword_count) {
+        this.num_buttons.push(num_buttons)
+        this.num_links.push(num_links)
+        this.num_common_url.push(num_common_url)
+        this.num_numeric_nodes.push(num_numeric_nodes)
+        this.has_keyword.push(has_keyword)
+        this.keyword_count.push(keyword_count)
+        this.coordinates.push(generateCoordinates(item))
+    }
+
+    extractFeatures = function() {
+        for (const item of document.querySelectorAll('')) {
+            let num_buttons = 0
+            let num_links = 0
+            let num_common_url = 0
+            let num_numeric_nodes = 0
+            let has_keyword = false
+            let keyword_count = 0
+            
+        }
+    }
+}
 const searchCandidateList = new searchCandidates()
-const filterCandidateList = new filterCandidates()
+// const filterCandidateList = new filterCandidates()
+const sortCandidateList = new sortCandidates()
+
 data = {
     search : searchCandidateList,
-    filter : filterCandidateList,
+    // filter : filterCandidateList,
+    sort : sortCandidateList,
     // viewport size
     viewport_width : window.innerWidth,
     viewport_height : window.innerHeight,
     //document size
-    page_dims : document.documentElement.getBoundingClientRect()
+    page_width : document.documentElement.getBoundingClientRect().width,
+    page_height : document.documentElement.getBoundingClientRect().height
 
 }
 
 console.log('data output: ',JSON.stringify(data))
 console.log('search output: ',JSON.stringify(searchCandidateList))
-console.log('filter output: ',JSON.stringify(filterCandidateList))
+// console.log('filter output: ',JSON.stringify(filterCandidateList))
+console.log('sort output: ',JSON.stringify(sortCandidateList))
 
 // searchCandidateList.makeCsv()
 // filterCandidatesList.makeCsv()
