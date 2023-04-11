@@ -255,19 +255,17 @@ class filterCandidates extends Candidates {
         //     if (closestParentElement.find('*') === outerParentElement.find('* : not(nth-child(1)'))
         // }
         const elements = {
-            divs : document.querySelectorAll('div > nav, div > ul, div > a, div > dl'),
-            // nav : document.querySelectorAll('nav'),
-            // li : document.querySelectorAll('li'),
-            // ul : document.querySelectorAll('ul'),
-            span : document.querySelectorAll('span > nav, span > a, span > ul, span > dl'),
-            section : document.querySelectorAll('section > nav, section > ul, section > dl'),
-            form : document.querySelectorAll('form')
-            // button : document.querySelectorAll('button'),
-            // tr : document.querySelectorAll('tr'),
-            // footer : document.querySelectorAll('footer'),
-            // a : document.querySelectorAll('a'),
-            // pagination : document.querySelectorAll('pagination'),
-            // b : document.querySelectorAll('b')
+            divs : document.querySelectorAll('div'),
+            li : document.querySelectorAll('li'),
+            ul : document.querySelectorAll('ul'),
+            desktop_facet : document.querySelectorAll('desktop-facet'),
+            section : document.querySelectorAll('section'),
+            button : document.querySelectorAll('button'),
+            form : document.querySelectorAll('form'),
+            dt : document.querySelectorAll('dt'),
+            fieldset : document.querySelectorAll('fieldset'),
+            dl : document.querySelectorAll('dl'),
+            article : document.querySelectorAll('article')
         }
 
         for (const element in elements) {
@@ -320,9 +318,9 @@ class sortCandidates extends Candidates {
 
     push = function(item, keyword_match, keyword_count, has_sort_text, num_option_tag) {
         console.log('sort pushed: ',keyword_match,' ',keyword_count,' ',has_sort_text,' ',num_option_tag)
-        this.keyword_match.push(keyword_match)
+        this.keyword_match.push(keyword_match? 1 : 0)
         this.keyword_count.push(keyword_count)
-        this.has_sort_text.push(has_sort_text)
+        this.has_sort_text.push(has_sort_text? 1 : 0)
         this.num_option_tag.push(num_option_tag)
         this.coordinates.push(this.generateCoordinates(item))
     }
@@ -367,45 +365,144 @@ class sortCandidates extends Candidates {
 
 class pageCandidates extends Candidates {
     constructor() {
+        super()
         this.num_buttons = []
         this.num_links = []
         this.num_common_url = []
         this.num_numeric_nodes = [] // no. of nodes with only numbers as text
         this.has_keyword = []
         this.keyword_count = []
+        this.nav_type = []
         this.coordinates = []
+        this.extractFeatures()
     }
 
-    push = function(item, num_buttons, num_links, num_common_url, num_numeric_nodes, has_keyword, keyword_count) {
+    push = function(item, num_buttons, num_links, num_common_url, num_numeric_nodes, has_keyword, keyword_count, nav_type) {
         this.num_buttons.push(num_buttons)
         this.num_links.push(num_links)
         this.num_common_url.push(num_common_url)
         this.num_numeric_nodes.push(num_numeric_nodes)
-        this.has_keyword.push(has_keyword)
+        this.has_keyword.push(has_keyword ? 1 : 0)
         this.keyword_count.push(keyword_count)
-        this.coordinates.push(generateCoordinates(item))
+        this.nav_type.push(nav_type)
+        this.coordinates.push(this.generateCoordinates(item))
     }
 
-    extractFeatures = function() {
-        for (const item of document.querySelectorAll('')) {
-            let num_buttons = 0
-            let num_links = 0
-            let num_common_url = 0
-            let num_numeric_nodes = 0
-            let has_keyword = false
-            let keyword_count = 0
-            
+    
+    extractFeatures = function () {
+        // function findOuterParent(element, parentElement) {
+        //     let closestParentElement = $(element).closest(parentElement)
+        //     let outerParentElement = $(closestParentElement).closest(parentElement)
+        //     if (closestParentElement.find('*') === outerParentElement.find('* : not(nth-child(1)'))
+        // }
+        const elements = {
+            divs : document.querySelectorAll('div'),
+            nav : document.querySelectorAll('nav'),
+            li : document.querySelectorAll('li'),
+            ul : document.querySelectorAll('ul'),
+            span : document.querySelectorAll('span'),
+            section : document.querySelectorAll('section'),
+            button : document.querySelectorAll('button'),
+            tr : document.querySelectorAll('tr'),
+            footer : document.querySelectorAll('footer'),
+            a : document.querySelectorAll('a'),
+            pagination : document.querySelectorAll('pagination'),
+            b : document.querySelectorAll('b')
+        }
+
+        function split_url(url) {
+            return url.replace('http://','').replace('https://','').split('/')
+        }
+
+        for (const element in elements) {
+            console.log('element: ',elements[element],' elements: ',elements)
+            for (const item of elements[element]) {
+                let num_buttons = 0
+                let num_links = 0
+                let num_common_url = 0
+                let num_numeric_nodes = 0
+                let has_keyword = false
+                let keyword_count = 0
+                let nav_type = 0
+                let keywords = ['page', 'show', 'next', 'previous']
+                
+                // num_buttons
+                num_buttons += item.querySelectorAll('button').length
+                num_buttons += item.querySelectorAll('input[type="button"]').length
+                num_buttons += item.querySelectorAll('input[type="submit"]').length
+                
+
+                // num_links
+                num_links += item.querySelectorAll('a').length
+
+                let url_domains = {}
+                // num_common_url
+                for (const a of item.querySelectorAll('a')) {
+                    let curr_domain = split_url(a.getAttribute('href'))[0]
+                    if (curr_domain in url_domains) {
+                        url_domains[curr_domain] += 1
+                    }
+                    else {
+                        url_domains[curr_domain] = 1
+                    }
+                    // num_common_url += url_domains.reduce((domain, count) => Math.max(count))
+                    let object_counts = Object.values(url_domains).filter(count => count > 1)
+                    if (object_counts.length > 0) {
+                        console.log('math max: ',Math.max.apply(Math, object_counts))
+                        num_common_url = Math.max.apply(Math, object_counts)
+                        // num_common_url = check if count only max domain or all multiple domains.
+                        console.log('url split: ',object_counts)
+                        console.log('common urls: ',num_common_url)
+                    }
+                }
+
+                // has_keyword
+                // keyword_count
+                for (const inner_item of item.querySelectorAll('*')) {
+                    if (inner_item.innerText != undefined && keywords.includes(inner_item.innerText.toLowerCase())) {
+                        has_keyword = true
+                        keyword_count += 1
+                    }
+
+                    
+                    // num_numeric_nodes
+                    if (!isNaN(parseInt(inner_item.innerText))) {
+                        console.log('inner text: ',inner_item.innerText,' !isnan: ',!isNaN(parseInt(inner_item.innerText)))
+                        num_numeric_nodes += 1
+                    }
+                    
+                }
+
+                // nav_type
+                let buttons = item.querySelectorAll('button')
+                let alink = item.querySelectorAll('a')
+                if (buttons.length > 0) {
+                    if (alink.length > 0) {
+                        nav_type = 3
+                    }
+                    else {
+                        nav_type = 1
+                    }
+                
+            }
+            else {
+                nav_type = 2
+            }
+                this.push(item, num_buttons=num_buttons, num_links=num_links, num_common_url=num_common_url, num_numeric_nodes=num_numeric_nodes, has_keyword=has_keyword, keyword_count=keyword_count, nav_type=nav_type)
+            }
         }
     }
 }
-const searchCandidateList = new searchCandidates()
-// const filterCandidateList = new filterCandidates()
-const sortCandidateList = new sortCandidates()
+const searchCandidateFeatures = new searchCandidates()
+const filterCandidateFeatures = new filterCandidates()
+const sortCandidateFeatures = new sortCandidates()
+const pageCandidateFeatures = new pageCandidates()
 
 data = {
-    search : searchCandidateList,
-    // filter : filterCandidateList,
-    sort : sortCandidateList,
+    search : searchCandidateFeatures,
+    sort : sortCandidateFeatures,
+    page : pageCandidateFeatures,
+    filter : filterCandidateFeatures,
     // viewport size
     viewport_width : window.innerWidth,
     viewport_height : window.innerHeight,
@@ -415,15 +512,15 @@ data = {
 
 }
 
-console.log('data output: ',JSON.stringify(data))
-console.log('search output: ',JSON.stringify(searchCandidateList))
-// console.log('filter output: ',JSON.stringify(filterCandidateList))
-console.log('sort output: ',JSON.stringify(sortCandidateList))
+// console.log('data output: ',JSON.stringify(data))
+// console.log('search output: ',JSON.stringify(searchCandidateFeatures))
+// console.log('filter output: ',JSON.stringify(filterCandidateFeatures))
+// console.log('sort output: ',JSON.stringify(sortCandidateFeatures))
 
-// searchCandidateList.makeCsv()
+// searchCandidateFeatures.makeCsv()
 // filterCandidatesList.makeCsv()
 // extractFeatures()
-// console.log(searchCandidateList)
+// console.log(searchCandidateFeatures)
 // var file = new Blob([json], {type : 'json'})
 // link.href = URL.createObjectURL(file)
 // link.download = 'features.json'

@@ -40,27 +40,28 @@ def output_summary(text, model_path = r't5-model', tokenizer_path = r't5-model')
   return tokenizer.decode(outputs[0]).strip('<pad>').strip('</s>').strip()
 
 def generate_structured_summary(human_readable_position, element = 'search'):
-    print('hrpos: ',human_readable_position)
-    print('hrpos replaced _: ',human_readable_position[0].replace('_',' ').replace('-',' '))
+    ''' Creates a structured data from human_readable_position, to be given as input to the summarizer in output_summary(). '''
+    # print('hrpos: ',human_readable_position)
+    # print('hrpos replaced _: ',human_readable_position[0].replace('_',' ').replace('-',' '))
     return f"{element} | location | {human_readable_position[0].replace('_',' ').replace('-',' ')} && {element} | near  | {human_readable_position[1].replace('_',' ').replace('-',' ')}"
 
-def add_structured_summary(feature_df):
-    ''' Takes in html page and load it's content and return objects as structured data.'''
+def add_structured_summary(feature_df, element):
+    ''' Takes dataframe with features and returns the dataframe with structured summary in a new column.'''
     # for col in ['action','human_readable_position']:
     #         element_values['model_input'] += f'{element_values["subject"]} | {col} | {element_values[col]} &&'
     #     element_values['model_input'] = element_values['model_input'].strip('&&').strip()
     # structured_data = 'animals | action | filter && animals | location | center'
     # structured_data = 'Hotels | action | sort && Hotels | human_readable_position | top-left'.replace('_',' ').replace('-',' ')
-    feature_df['structured_summary_item'] = feature_df['human_readable_position'].map(generate_structured_summary)
-    print(feature_df)
+    feature_df['structured_summary_item'] = feature_df['human_readable_position'].map(lambda hrpos: generate_structured_summary(hrpos, element))
+    # print(feature_df)
     return feature_df
 
 # @app.route('/')
 def speak(text = 'Hotels | action | sort && Hotels | human_readable_position | top-left'):
     '''converts text to speech'''
-    print('text: ',text)
+    # print('text: ',text)
     text = text.replace('_',' ').replace('-',' ')
-    print('text: ',text)
+    # print('text: ',text)
     mp3_file_object = BytesIO()
     tts = gTTS(text, lang='en')
     tts.write_to_fp(mp3_file_object)
@@ -74,9 +75,10 @@ def speak(text = 'Hotels | action | sort && Hotels | human_readable_position | t
     time.sleep(audio.info.length)
     return text
 
-def classify(feature_df, filename=r'classifier-models\search_model.sav'):
+def classify(feature_df, filename):
     classifier_model = pickle.load(open(filename,'rb'))
     # coordinates = feature_df.pop('coordinates')
+    print('feature_df["predictions"].cols: ',feature_df.head())
     feature_df['predictions'] = classifier_model.predict(feature_df[feature_df.columns[:-1]].values)
     # print('predictions:\n',feature_df["predictions"],'\n\ncoordinates:\n',coordinates)
     print(feature_df)
@@ -91,7 +93,7 @@ def find_element_region(element_coords, page_size):
     region = {'left' : False,'right' : False, 'top' : False, 'bottom' : False} 
     reference_proximity = {'closer_to_center_x' : False, 'closer_to_center_y' : False, 'closer_to_right_end' : False, 'closer_to_left_end' : False,
     'closer_to_top' : False, 'closer_to_bottom' : False}
-    print('element_coords: ',element_coords)
+    # print('element_coords: ',element_coords)
     element_center = find_element_center(element_coords)
     page_center = {'x' : int(page_size[0] / 2), 'y' : int(page_size[1] / 2)}
     if element_center['x'] < page_center['x']:
@@ -118,8 +120,8 @@ def find_element_region(element_coords, page_size):
             reference_proximity['closer_to_bottom'] = True
         elif (element_center['y'] - page_center['y']) < 0:
             reference_proximity['closer_to_top'] = True
-    print('inner region: ',region)
-    print('inner prox: ',reference_proximity)
+    # print('inner region: ',region)
+    # print('inner prox: ',reference_proximity)
     return (region, reference_proximity)
 
 def find_human_readable_position(element_coords, page_size):
@@ -180,54 +182,44 @@ def generate_summary(search_features = ['has_inner_text', 'has_search_inner_text
     # print('request.get_json: ',len(request.get_json(force=True)))
     feature_json_dict = request.json
     feature_df_dict = {} # {k : pd.DataFrame(feature_dict[k]) for k in feature_dict.keys()}
-    print('feature_df_dict: ',feature_json_dict['search'])
+    dim_coord_dict = {}
+    print('page_dims: ',feature_json_dict['page_width'],' ',feature_json_dict['page_height'])
     for k in feature_json_dict.keys():
-        feature_df_dict[k] = pd.DataFrame(feature_json_dict[k])
-        print('k:')
-        print('info:\n',feature_df_dict[k].info())
-        print('head:\n',feature_df_dict[k].head())
-    print('all keys: ',list(feature_df_dict.keys()))
+        print('k:',k)
+        if isinstance(feature_json_dict[k], dict):
+            feature_df_dict[k] = pd.DataFrame(feature_json_dict[k])
+            feature_df_dict[k]['coordinates'] = feature_df_dict[k]['coordinates'].map(tuple)
+            feature_df_dict[k].drop_duplicates(keep='first')
+            print('info:\n',feature_df_dict[k].info())
+            print('head:\n',feature_df_dict[k].head())
+        else:
+            dim_coord_dict[k] = feature_json_dict[k]
+    #         print('dim-coord-dict: ',dim_coord_dict)
+    # print('feature_df keys: ',list(feature_df_dict.keys()))
+    # print('dim_coord keys: ',list(dim_coord_dict.keys()))
 
-    ##### Update to work with the changed feature_dfs
-    for features in search_features,filter_features:
-        feature_dict = {feature: request.form.get(feature) for feature in features}
-        view_port_size = (float(request.form.get('viewport_width')), float(request.form.get('viewport_height')))
-        page_size = (float(request.form.get('page_width')), float(request.form.get('page_height')))
-        print('feature_dict: ',feature_dict)
-        print('len(feature_dict): ',len(feature_dict))
-        for k in feature_dict.keys():
-            print(k,':',len(feature_dict[k]),'\n', feature_dict[k])
-            feature_dict[k] = feature_dict[k].split()
-            if not feature_dict[k][0].isnumeric():
-                feature_dict[k] = [list(map(float, row.split(','))) for row in feature_dict[k]]
-            else:
-                feature_dict[k] = list(map(float, feature_dict[k]))
-        
-
-            print(k,':',len(feature_dict[k]), feature_dict[k][0])
-            
-        feature_df = pd.DataFrame(feature_dict)
-        print(feature_df.head())
-        # print('info:')
-        # print(feature_df.info())
-        feature_df = classify(feature_df)
+    filenames = {'search' : r'classifier-models\search_model.sav', 'filter' : r'classifier-models\filter_model_2.sav', 'sort' : r'classifier-models\sort_model_2.sav', 'page' : r'classifier-models\page_model_2.sav'}
+    for element, feature_df in feature_df_dict.items():
+        print('-----',element,':')
+        feature_df.drop_duplicates(keep='first')
+        print('feature_df.info:\n',feature_df.info())
+        if len(feature_df) == 0:
+            continue
+        feature_df = classify(feature_df, filenames[element])
         # feature_df[['region']]
-        region = feature_df['coordinates'].map(lambda c: find_element_region(c, page_size))
+        region = feature_df['coordinates'].map(lambda c: find_element_region(c, [dim_coord_dict[k] for k in ['page_width', 'page_height']]))
         print('region: ',region)
         feature_df['region'], feature_df['reference_proximity'] = region.str[0], region.str[1]
         
-        feature_df['human_readable_position'] = feature_df['coordinates'].map(lambda row: find_human_readable_position(row, page_size))
+        feature_df['human_readable_position'] = feature_df['coordinates'].map(lambda row: find_human_readable_position(row, [dim_coord_dict[k] for k in ['page_width', 'page_height']]))
         # print('reference_proximity')
+        
         print(feature_df.head())
-        feature_df = add_structured_summary(feature_df)
+        feature_df = add_structured_summary(feature_df, element)
         feature_df['generated'] = feature_df['structured_summary_item'].map(output_summary)
         feature_df['generated'].map(speak)
-        # print(feature_df.info())
-        # feature_df = feature_df.assign(region = lambda row: find_element_region(row['coordinates'].values, page_size))
         text = 'generate_summary() called.'
-        # for text in ['Hotels | action | search && Hotels | human_readable_position | top', 'Hotels | action | sort && Hotels | human_readable_position | top-right', 'Hotels | action | filter && Hotels | human_readable_position | left', 'Results | action | discover && Results | location | center-bottom-right']:
-        #     speak(generate(load(text)))
-        return text
+    return text
 
 
 # if __name__ == '__main__':
