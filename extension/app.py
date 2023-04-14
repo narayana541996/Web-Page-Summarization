@@ -157,8 +157,7 @@ def find_human_readable_position(element_coords, page_size):
 
 
 @app.route('/generate_summary/', methods = ['POST'])
-def generate_summary(search_features = ['has_inner_text', 'has_search_inner_text', 'num_search', 'has_button', 'has_search_attr', 'coordinates'],
-                     filter_features = ['has_checkbox_list', 'num_links', 'num_inputs', 'all_child_links_valid', 'has_button_list', 'coordinates']):
+def generate_summary():
     # driver = webdriver.Chrome()
     # url = driver.command_executor._url
     # print(url)
@@ -181,13 +180,15 @@ def generate_summary(search_features = ['has_inner_text', 'has_search_inner_text
     # print('request.json: ',len(request.json))
     # print('request.get_json: ',len(request.get_json(force=True)))
     feature_json_dict = request.json
+    print('json dict:\n',feature_json_dict)
     feature_df_dict = {} # {k : pd.DataFrame(feature_dict[k]) for k in feature_dict.keys()}
     dim_coord_dict = {}
     print('page_dims: ',feature_json_dict['page_width'],' ',feature_json_dict['page_height'])
     for k in feature_json_dict.keys():
         print('k:',k)
         if isinstance(feature_json_dict[k], dict):
-            feature_df_dict[k] = pd.DataFrame(feature_json_dict[k])
+            print(feature_json_dict[k])
+            feature_df_dict[k] = pd.DataFrame(feature_json_dict[k]['features'])
             feature_df_dict[k]['coordinates'] = feature_df_dict[k]['coordinates'].map(tuple)
             feature_df_dict[k].drop_duplicates(keep='first')
             print('info:\n',feature_df_dict[k].info())

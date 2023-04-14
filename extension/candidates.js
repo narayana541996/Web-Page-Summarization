@@ -6,58 +6,128 @@ console.log('json: ',json)
 
 
 class Candidates {
+    constructor(){
+        this.features = {}
+    }
 
     generateCoordinates = function(item) {
         let temp_coordinates = item.getBoundingClientRect()
         return [temp_coordinates.left + window.scrollX, temp_coordinates.top + window.scrollY, temp_coordinates.right + window.scrollX, temp_coordinates.bottom + window.scrollY, temp_coordinates.height, temp_coordinates.width]
     }
 
+    push = function(item, features) {
+        if (!Object.hasOwn(features, 'coordinates')) {
+            features['coordinates'] = this.generateCoordinates(item)
+        }
+        if (features['coordinates'][4] > 0 || features['coordinates'][5] > 0) {
+            console.log('features: ',features,' type: ',typeof(features))
+            for (const feature in features) {            
+                console.log('feature : ',feature,' type: ', typeof(features[feature]),'is array: ',Array.isArray(features[feature]),' value: ',features[feature])
+                // typeof function doesn't work, use typeof operator
+                if (typeof features[feature] === 'boolean') {
+                    this.features[feature].push(features[feature]? 1 : 0)
+                    
+                }
+                
+                else{
+                    this.features[feature].push(features[feature])
+                }
+            }
+        }
+    }
+
+    pop = function(index) {
+        for (const feature in this.features) {
+            this.features[feature].pop(index)
+        }
+    }
+
+    arrayize = function(index) {
+        'Creates array with values of all the featues at the given index'
+        let feature_array = []
+        for (const feature in this.features) {
+            feature_array.push(this.features[feature][index])
+        }
+        return feature_array
+    }
+
+    uniquize = function() {
+
+        
+        if (this.features !== undefined && Object.keys(this.features)[0].length > 0) {
+            let feature_array = [this.arrayize(0)]
+
+            if (this.features !== undefined && Object.keys(this.features).length > 1) {
+                for (let i=1; i < Object.keys(this.features)[0].length; i++) {
+                    let curr_features = this.arrayize(i)
+                    if (!feature_array.includes(curr_features)) {
+                        feature_array.push(curr_features)
+                    }
+                    else {
+                        this.pop(index)
+                    }
+                }
+            }
+        }
+        
+        
+        
+        // if (this.features !== undefined && Object.keys(this.features).length > 0) {
+        //     for(const i=0; i< feature_array.length; i++) {
+        //         temp_features = {}
+        //         j = 0
+        //         for (const feature of this.features) {
+        //             temp_features[feature] = feature_array[i][j]
+        //             j += 1
+        //         }
+        //         this.push(features=temp_features)
+                
+        //     }
+        // }
+        
+        
+    }
+
+    
+
     extractFeatures = function() {
         throw new Error('Cannot instantiate abstract class method.')
     }
 
-    push = function() {
-        throw new Error('Cannot instantiate abstract class method.')
-    }
 
-    makeUrlParams = function() {
-        throw new Error('Cannot instantiate abstract class method.')
-    }
-
-    makeCsv = function() {
-        throw new Error('Cannot instantiate abstract class method.')
-    }
+    
 }
 
 class searchCandidates extends Candidates {
     constructor (){
         super()
-        this.has_inner_text = []
-        this.has_search_inner_text = []
-        this.num_search = []
-        this.has_button = []
-        this.has_search_attr = []
-        this.coordinates = []
+        // this.has_inner_text = []
+        // this.has_search_inner_text = []
+        // this.num_search = []
+        // this.has_button = []
+        // this.has_search_attr = []
+        // this.coordinates = []
+        this.features = {
+            has_inner_text : [],
+            has_search_inner_text : [],
+            num_search : [],
+            has_button : [],
+            has_search_attr : [],
+            coordinates : []
+        }
         this.extractFeatures()
     }
 
-    push = function(item, has_inner_text, has_search_inner_text, num_search, has_button, has_search_attr) {
-        console.log('search pushed: ', item, 'has_inner_text: ', has_inner_text, ' has_search_inner_text: ',has_search_inner_text, 'num_search: ', num_search, has_button, 'has_search_attr: ', has_search_attr)
-        this.has_inner_text.push(has_inner_text? 1 : 0)
-        this.has_search_inner_text.push(has_search_inner_text? 1 : 0)
-        this.num_search.push(num_search)
-        this.has_button.push(has_button? 1 : 0)
-        this.has_search_attr.push(has_search_attr? 1 : 0)
-        this.coordinates.push(this.generateCoordinates(item))
-    }
-    pop = function(){
-        this.has_inner_text.pop()
-        this.has_search_inner_text.pop()
-        this.num_search.pop()
-        this.has_button.pop()
-        this.has_search_attr.pop()
-        this.coordinates.pop()
-    }
+    // push = function(item, has_inner_text, has_search_inner_text, num_search, has_button, has_search_attr) {
+    //     console.log('search pushed: ', item, 'has_inner_text: ', has_inner_text, ' has_search_inner_text: ',has_search_inner_text, 'num_search: ', num_search, has_button, 'has_search_attr: ', has_search_attr)
+    //     this.has_inner_text.push(has_inner_text? 1 : 0)
+    //     this.has_search_inner_text.push(has_search_inner_text? 1 : 0)
+    //     this.num_search.push(num_search)
+    //     this.has_button.push(has_button? 1 : 0)
+    //     this.has_search_attr.push(has_search_attr? 1 : 0)
+    //     this.coordinates.push(this.generateCoordinates(item))
+    // }
+    
 
     
 
@@ -96,7 +166,6 @@ class searchCandidates extends Candidates {
     }
 
     extractFeatures = function () {
-        let csv_string = ``
         for (const item of document.querySelectorAll('form')) {
             let has_search_attr = false
             let has_button = false
@@ -112,11 +181,11 @@ class searchCandidates extends Candidates {
                     has_search_attr = true
             
             // check if it has inner text (aria-label and placeholder are also considered inner text)
-            if (item.attributes['aria-label'] != undefined && item.attributes['aria-label'].value.toLowerCase().match('search')) {
+            if (item.attributes['aria-label'] !== undefined && item.attributes['aria-label'].value.toLowerCase().match('search')) {
                 has_search_inner_text = true
                 num_search += 1
             }
-            if (item.attributes['placeholder'] != undefined && item.attributes['placeholder'].value.toLowerCase().match('search')) {
+            if (item.attributes['placeholder'] !== undefined && item.attributes['placeholder'].value.toLowerCase().match('search')) {
                 has_search_inner_text = true
                 num_search += 1
             }
@@ -184,34 +253,64 @@ class searchCandidates extends Candidates {
                 has_button = true
                 
             }
-            this.push(item, has_inner_text=has_inner_text, has_search_inner_text=has_search_inner_text, num_search=num_search, has_button=has_button, has_search_attr=has_search_attr)
+            let temp_features = {
+                has_inner_text : has_inner_text,
+                has_search_inner_text : has_search_inner_text,
+                num_search : num_search,
+                has_button : has_button,
+                has_search_attr : has_search_attr
+            }
+            this.push(item, temp_features)
         }   
     }
 };
 
 class filterCandidates extends Candidates {
+    // Create custom log function
     constructor (){
         super()
-        this.has_checkbox_list = []
-        this.num_links = []
-        this.num_inputs = []
-        this.all_child_links_valid = []
-        this.has_button_list = []
-        this.coordinates = []
+        // this.has_checkbox_list = []
+        // this.num_links = []
+        // this.num_inputs = []
+        // this.all_child_links_valid = []
+        // this.has_button_list = []
+        // this.coordinates = []
+        this.features = {
+            has_checkbox_list : [],
+            num_links : [],
+            num_inputs : [],
+            all_child_links_valid : [],
+            has_button_list : [],
+            coordinates : []
+        }
         this.extractFeatures()
+        this.uniquize()
     }
 
-    push = function(item, has_checkbox_list, num_links, num_inputs, has_button_list, all_child_links_valid) {
-        // console.log('pushed: ', item, 'has_checkbox_list: ', has_checkbox_list, ' num_links: ',num_links, 'num_inputs: ', num_inputs, 'has_button_list: ',has_button_list, 'all_child_links_valid: ', all_child_links_valid)
-        this.has_checkbox_list.push(has_checkbox_list? 1 : 0)
-        this.num_links.push(num_links)
-        this.num_inputs.push(num_inputs)
-        this.has_button_list.push(has_button_list? 1 : 0)
-        this.all_child_links_valid.push(all_child_links_valid? 1 : 0)
-        this.coordinates.push(this.generateCoordinates(item))
-    }
- 
+    // push = function(item, has_checkbox_list, num_links, num_inputs, has_button_list, all_child_links_valid, coordinates = undefined) {
+    //     // console.log('pushed: ', item, 'has_checkbox_list: ', has_checkbox_list, ' num_links: ',num_links, 'num_inputs: ', num_inputs, 'has_button_list: ',has_button_list, 'all_child_links_valid: ', all_child_links_valid)
+    //     // item and coordinates are mutually exclusive parameters
+    //     if (item !== undefined) {
+    //         this.has_checkbox_list.push(has_checkbox_list? 1 : 0)
+    //         this.num_links.push(num_links)
+    //         this.num_inputs.push(num_inputs)
+    //         this.has_button_list.push(has_button_list? 1 : 0)
+    //         this.all_child_links_valid.push(all_child_links_valid? 1 : 0)
+    //         this.coordinates.push(this.generateCoordinates(item))
+    //     }
 
+    //     else {
+    //         this.has_checkbox_list.push(has_checkbox_list? 1 : 0)
+    //         this.num_links.push(num_links)
+    //         this.num_inputs.push(num_inputs)
+    //         this.has_button_list.push(has_button_list? 1 : 0)
+    //         this.all_child_links_valid.push(all_child_links_valid? 1 : 0)
+    //         this.coordinates.push(this.generateCoordinates(item))
+    //     }
+    // }
+    
+    // should remove duplicates directly return the array with features, without pushing back to properties, to avoid extra processing on server?
+    
     
 
     makeUrlParams = function(){
@@ -298,7 +397,15 @@ class filterCandidates extends Candidates {
                 if (item.querySelectorAll('button').length > 1 || item.querySelectorAll('input[type=button]').length > 1 || item.querySelectorAll('input[type=submit]').length > 1) {
                     has_button_list = true
                 }
-                this.push(item, has_checkbox_list=has_checkbox_list, num_links=num_links, num_inputs=num_inputs, has_button_list=has_button_list, all_child_links_valid=all_child_links_valid)
+
+                let temp_features = {
+                    has_checkbox_list : has_checkbox_list,
+                    num_links : num_links,
+                    num_inputs : num_inputs,
+                    has_button_list : has_button_list,
+                    all_child_links_valid : all_child_links_valid
+                }
+                this.push(item, temp_features)
             }
         }
     }
@@ -308,22 +415,29 @@ class sortCandidates extends Candidates {
     
     constructor() {
         super()
-        this.keyword_match = []
-        this.keyword_count = []
-        this.has_sort_text = []
-        this.num_option_tag = []
-        this.coordinates = []
+        // this.keyword_match = []
+        // this.keyword_count = []
+        // this.has_sort_text = []
+        // this.num_option_tag = []
+        // this.coordinates = []
+        this.features = {
+            keyword_match : [],
+            keyword_count : [],
+            has_sort_text : [],
+            num_option_tag : [],
+            coordinates : []
+        }
         this.extractFeatures()
     }
 
-    push = function(item, keyword_match, keyword_count, has_sort_text, num_option_tag) {
-        console.log('sort pushed: ',keyword_match,' ',keyword_count,' ',has_sort_text,' ',num_option_tag)
-        this.keyword_match.push(keyword_match? 1 : 0)
-        this.keyword_count.push(keyword_count)
-        this.has_sort_text.push(has_sort_text? 1 : 0)
-        this.num_option_tag.push(num_option_tag)
-        this.coordinates.push(this.generateCoordinates(item))
-    }
+    // push = function(item, keyword_match, keyword_count, has_sort_text, num_option_tag) {
+    //     console.log('sort pushed: ',keyword_match,' ',keyword_count,' ',has_sort_text,' ',num_option_tag)
+    //     this.keyword_match.push(keyword_match? 1 : 0)
+    //     this.keyword_count.push(keyword_count)
+    //     this.has_sort_text.push(has_sort_text? 1 : 0)
+    //     this.num_option_tag.push(num_option_tag)
+    //     this.coordinates.push(this.generateCoordinates(item))
+    // }
 
     extractFeatures = function() {
 
@@ -358,7 +472,14 @@ class sortCandidates extends Candidates {
             //     }
             // }
             num_option_tag = item.querySelectorAll('li').length
-            this.push(item, keyword_count=keyword_count, keyword_match=keyword_match, has_sort_text=has_sort_text, num_option_tag=num_option_tag)
+
+            let temp_features = {
+                keyword_count : keyword_count,
+                keyword_match : keyword_match,
+                has_sort_text : has_sort_text,
+                num_option_tag : num_option_tag,
+            }
+            this.push(item, temp_features)
         }
     }
 }
@@ -366,27 +487,38 @@ class sortCandidates extends Candidates {
 class pageCandidates extends Candidates {
     constructor() {
         super()
-        this.num_buttons = []
-        this.num_links = []
-        this.num_common_url = []
-        this.num_numeric_nodes = [] // no. of nodes with only numbers as text
-        this.has_keyword = []
-        this.keyword_count = []
-        this.nav_type = []
-        this.coordinates = []
+        // this.num_buttons = []
+        // this.num_links = []
+        // this.num_common_url = []
+        // this.num_numeric_nodes = [] // no. of nodes with only numbers as text
+        // this.has_keyword = []
+        // this.keyword_count = []
+        // this.nav_type = []
+        // this.coordinates = []
+        this.features = {
+            num_buttons : [],
+            num_links : [],
+            num_common_url : [],
+            num_numeric_nodes : [],
+            has_keyword : [],
+            keyword_count : [],
+            nav_type : [],
+            coordinates : []
+        }
         this.extractFeatures()
+        this.uniquize()
     }
 
-    push = function(item, num_buttons, num_links, num_common_url, num_numeric_nodes, has_keyword, keyword_count, nav_type) {
-        this.num_buttons.push(num_buttons)
-        this.num_links.push(num_links)
-        this.num_common_url.push(num_common_url)
-        this.num_numeric_nodes.push(num_numeric_nodes)
-        this.has_keyword.push(has_keyword ? 1 : 0)
-        this.keyword_count.push(keyword_count)
-        this.nav_type.push(nav_type)
-        this.coordinates.push(this.generateCoordinates(item))
-    }
+    // push = function(item, num_buttons, num_links, num_common_url, num_numeric_nodes, has_keyword, keyword_count, nav_type) {
+    //     this.num_buttons.push(num_buttons)
+    //     this.num_links.push(num_links)
+    //     this.num_common_url.push(num_common_url)
+    //     this.num_numeric_nodes.push(num_numeric_nodes)
+    //     this.has_keyword.push(has_keyword ? 1 : 0)
+    //     this.keyword_count.push(keyword_count)
+    //     this.nav_type.push(nav_type)
+    //     this.coordinates.push(this.generateCoordinates(item))
+    // }
 
     
     extractFeatures = function () {
@@ -488,7 +620,18 @@ class pageCandidates extends Candidates {
             else {
                 nav_type = 2
             }
-                this.push(item, num_buttons=num_buttons, num_links=num_links, num_common_url=num_common_url, num_numeric_nodes=num_numeric_nodes, has_keyword=has_keyword, keyword_count=keyword_count, nav_type=nav_type)
+
+            let temp_features = {
+                num_buttons : num_buttons,
+                num_links : num_links,
+                num_common_url : num_common_url,
+                num_numeric_nodes : num_numeric_nodes,
+                has_keyword : has_keyword,
+                keyword_count : keyword_count,
+                nav_type : nav_type
+                
+            }
+                this.push(item, temp_features)
             }
         }
     }
@@ -512,10 +655,10 @@ data = {
 
 }
 
-// console.log('data output: ',JSON.stringify(data))
-// console.log('search output: ',JSON.stringify(searchCandidateFeatures))
-// console.log('filter output: ',JSON.stringify(filterCandidateFeatures))
-// console.log('sort output: ',JSON.stringify(sortCandidateFeatures))
+console.log('data output: ',JSON.stringify(data))
+console.log('search output: ',JSON.stringify(searchCandidateFeatures))
+console.log('filter output: ',JSON.stringify(filterCandidateFeatures))
+console.log('sort output: ',JSON.stringify(sortCandidateFeatures))
 
 // searchCandidateFeatures.makeCsv()
 // filterCandidatesList.makeCsv()
