@@ -18,9 +18,10 @@ class Candidates {
     push = function(item, features) {
         if (!Object.hasOwn(features, 'coordinates')) {
             features['coordinates'] = this.generateCoordinates(item)
+            console.log('pushed item: ',item,' features: ',features)
         }
         if (features['coordinates'][4] > 0 || features['coordinates'][5] > 0) {
-            console.log('features: ',features,' type: ',typeof(features))
+            // console.log('features: ',features,' type: ',typeof(features))
             for (const feature in features) {            
                 console.log('feature : ',feature,' type: ', typeof(features[feature]),'is array: ',Array.isArray(features[feature]),' value: ',features[feature])
                 // typeof function doesn't work, use typeof operator
@@ -166,7 +167,7 @@ class searchCandidates extends Candidates {
     }
 
     extractFeatures = function () {
-        for (const item of document.querySelectorAll('form')) {
+        for (const item of document.querySelectorAll('form')) { //include section to detect search on some websites like momondo.com
             let has_search_attr = false
             let has_button = false
             let has_inner_text = false
@@ -177,7 +178,7 @@ class searchCandidates extends Candidates {
                 // console.log(att.value.toLowerCase())
                 if (att.value.toLowerCase().match('search')) {
                     // console.log('attribute: ',att)
-                    console.log('value: ',att.value)
+                    // console.log('value: ',att.value)
                     has_search_attr = true
             
             // check if it has inner text (aria-label and placeholder are also considered inner text)
@@ -354,17 +355,17 @@ class filterCandidates extends Candidates {
         //     if (closestParentElement.find('*') === outerParentElement.find('* : not(nth-child(1)'))
         // }
         const elements = {
-            divs : document.querySelectorAll('div'),
-            li : document.querySelectorAll('li'),
-            ul : document.querySelectorAll('ul'),
+            divs : document.querySelectorAll('div > ul, div > fieldset, div > section, div > dl, div > article, div > fieldset'),
+            // li : document.querySelectorAll('li'),
+            // ul : document.querySelectorAll('ul'),
             desktop_facet : document.querySelectorAll('desktop-facet'),
-            section : document.querySelectorAll('section'),
-            button : document.querySelectorAll('button'),
+            // section : document.querySelectorAll('section'),
+            // button : document.querySelectorAll('button'),
             form : document.querySelectorAll('form'),
-            dt : document.querySelectorAll('dt'),
-            fieldset : document.querySelectorAll('fieldset'),
-            dl : document.querySelectorAll('dl'),
-            article : document.querySelectorAll('article')
+            // dt : document.querySelectorAll('dt'),
+            // fieldset : document.querySelectorAll('fieldset'),
+            // dl : document.querySelectorAll('dl'),
+            // article : document.querySelectorAll('article')
         }
 
         for (const element in elements) {
@@ -528,21 +529,22 @@ class pageCandidates extends Candidates {
         //     if (closestParentElement.find('*') === outerParentElement.find('* : not(nth-child(1)'))
         // }
         const elements = {
-            divs : document.querySelectorAll('div'),
-            nav : document.querySelectorAll('nav'),
-            li : document.querySelectorAll('li'),
-            ul : document.querySelectorAll('ul'),
-            span : document.querySelectorAll('span'),
-            section : document.querySelectorAll('section'),
-            button : document.querySelectorAll('button'),
-            tr : document.querySelectorAll('tr'),
-            footer : document.querySelectorAll('footer'),
-            a : document.querySelectorAll('a'),
-            pagination : document.querySelectorAll('pagination'),
-            b : document.querySelectorAll('b')
+            divs : document.querySelectorAll('div > nav, div > ul, div > tr, div > pagination, div > section, div > footer'),
+            // nav : document.querySelectorAll('nav'),
+            // li : document.querySelectorAll('li'),
+            // ul : document.querySelectorAll('ul'),
+            span : document.querySelectorAll('span > nav, span > tr'),
+            // section : document.querySelectorAll('section'),
+            // button : document.querySelectorAll('button'),
+            // tr : document.querySelectorAll('tr'),
+            // footer : document.querySelectorAll('footer'),
+            // a : document.querySelectorAll('a'),
+            // pagination : document.querySelectorAll('pagination'),
+            // b : document.querySelectorAll('b')
         }
 
         function split_url(url) {
+            if (!url) {return ''}
             return url.replace('http://','').replace('https://','').split('/')
         }
 
@@ -570,6 +572,7 @@ class pageCandidates extends Candidates {
                 let url_domains = {}
                 // num_common_url
                 for (const a of item.querySelectorAll('a')) {
+                    if (a == undefined) { continue }
                     let curr_domain = split_url(a.getAttribute('href'))[0]
                     if (curr_domain in url_domains) {
                         url_domains[curr_domain] += 1
@@ -644,8 +647,8 @@ const pageCandidateFeatures = new pageCandidates()
 data = {
     search : searchCandidateFeatures,
     sort : sortCandidateFeatures,
-    page : pageCandidateFeatures,
-    filter : filterCandidateFeatures,
+    // page : pageCandidateFeatures,
+    // filter : filterCandidateFeatures,
     // viewport size
     viewport_width : window.innerWidth,
     viewport_height : window.innerHeight,

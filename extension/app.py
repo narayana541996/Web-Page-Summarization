@@ -198,6 +198,14 @@ def generate_summary():
     #         print('dim-coord-dict: ',dim_coord_dict)
     # print('feature_df keys: ',list(feature_df_dict.keys()))
     # print('dim_coord keys: ',list(dim_coord_dict.keys()))
+    def speak_webpage_overview(feature_df_dict):
+        '''Give an overview of the webpage mentioing all the selected elements present.'''
+        element_count_dict = {element: len(feature_df_dict[element]) for element in feature_df_dict.keys()}
+        elements_found = [element for element, count in element_count_dict.items() if count > 0]
+        if len(elements_found) > 1:
+            speak(output_summary('web page | overview | '+",".join(elements_found[:-1])+' and '+elements_found[-1] ))
+        elif len(elements_found) == 1:
+            speak(output_summary('web page | overview | '+elements_found[0]))
 
     filenames = {'search' : r'classifier-models\search_model.sav', 'filter' : r'classifier-models\filter_model_2.sav', 'sort' : r'classifier-models\sort_model_2.sav', 'page' : r'classifier-models\page_model_2.sav'}
     for element, feature_df in feature_df_dict.items():
@@ -206,8 +214,11 @@ def generate_summary():
         print('feature_df.info:\n',feature_df.info())
         if len(feature_df) == 0:
             continue
-        feature_df = classify(feature_df, filenames[element])
+        feature_df_dict[element] = classify(feature_df, filenames[element])
         # feature_df[['region']]
+    speak_webpage_overview(feature_df_dict)
+        
+    for element, feature_df in feature_df_dict.items():
         region = feature_df['coordinates'].map(lambda c: find_element_region(c, [dim_coord_dict[k] for k in ['page_width', 'page_height']]))
         print('region: ',region)
         feature_df['region'], feature_df['reference_proximity'] = region.str[0], region.str[1]
