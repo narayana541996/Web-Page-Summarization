@@ -1,5 +1,5 @@
 {
-  "_name_or_path": "t5-base",
+  "_name_or_path": "/content/drive/MyDrive/web_page_summarization/datasets/web-page-summarizer/extension/t5-model",
   "architectures": [
     "T5ForConditionalGeneration"
   ],
