@@ -153,6 +153,12 @@ def find_human_readable_position(element_coords, page_size):
         close_reference += '_left'
     elif reference_proximity['closer_to_right_end']:
         close_reference += '_right'
+        
+    if close_reference.strip('_') != 'center':
+        if len(close_reference.strip('_').split('_')) == 1:
+            close_reference += '_end'
+        elif len(close_reference.strip('_').split('_')) == 2:
+            close_reference += '_corner'
     return position.strip('_'), close_reference.strip('_')
 
 

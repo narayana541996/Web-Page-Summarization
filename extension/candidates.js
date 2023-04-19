@@ -1,4 +1,3 @@
-// 'use strict';
 const url = window.location.href
 const json = JSON.stringify({'url' : url})
 const link = document.createElement('a')
@@ -23,7 +22,7 @@ class Candidates {
         if (features['coordinates'][4] > 0 || features['coordinates'][5] > 0) {
             // console.log('features: ',features,' type: ',typeof(features))
             for (const feature in features) {            
-                console.log('feature : ',feature,' type: ', typeof(features[feature]),'is array: ',Array.isArray(features[feature]),' value: ',features[feature])
+                // console.log('feature : ',feature,' type: ', typeof(features[feature]),'is array: ',Array.isArray(features[feature]),' value: ',features[feature])
                 // typeof function doesn't work, use typeof operator
                 if (typeof features[feature] === 'boolean') {
                     this.features[feature].push(features[feature]? 1 : 0)
@@ -89,6 +88,26 @@ class Candidates {
         
     }
 
+    checkIfParent = function(element, find_parent) {
+            let is_parent = false
+            let parent = element.parentElement
+            while (parent !== document.querySelector('body')) 
+                { 
+                    is_parent = false
+                    // if (!document.querySelector('header') && !document.querySelector('footer')) 
+                    // { 
+                    //     return is_parent 
+                    // }
+                    if ((document.querySelector(find_parent) && parent === document.querySelector(find_parent))) 
+                    { 
+                        is_parent = true 
+                        return is_parent
+                    }
+                    parent = parent.parentElement
+                }
+                return is_parent
+        
+    }
     
 
     extractFeatures = function() {
@@ -167,13 +186,17 @@ class searchCandidates extends Candidates {
     }
 
     extractFeatures = function () {
-        for (const item of document.querySelectorAll('form')) { //include section to detect search on some websites like momondo.com
+        for (const item of document.querySelectorAll('form', 'input[type = "text"]')) { //include section to detect search on some websites like momondo.com
             let has_search_attr = false
             let has_button = false
             let has_inner_text = false
             let has_search_inner_text = false
             let num_search = 0
             console.log('attributes: ', item.attributes)
+
+            // if (this.checkIfParent(item, 'form')) {
+            //     continue
+            // }
             for (const att of item.attributes) {
                 // console.log(att.value.toLowerCase())
                 if (att.value.toLowerCase().match('search')) {
@@ -355,10 +378,10 @@ class filterCandidates extends Candidates {
         //     if (closestParentElement.find('*') === outerParentElement.find('* : not(nth-child(1)'))
         // }
         const elements = {
-            divs : document.querySelectorAll('div > ul, div > fieldset, div > section, div > dl, div > article, div > fieldset'),
+            // divs : document.querySelectorAll('div > ul, div > fieldset, div > section, div > dl, div > article, div > fieldset'),
             // li : document.querySelectorAll('li'),
             // ul : document.querySelectorAll('ul'),
-            desktop_facet : document.querySelectorAll('desktop-facet'),
+            // desktop_facet : document.querySelectorAll('desktop-facet'),
             // section : document.querySelectorAll('section'),
             // button : document.querySelectorAll('button'),
             form : document.querySelectorAll('form'),
@@ -392,7 +415,7 @@ class filterCandidates extends Candidates {
                 }
 
                 // num_inputs
-                num_inputs = item.querySelectorAll('input').length
+                num_inputs = item.querySelectorAll('input:not([type = "hidden"], [type = "text"])[type]').length
 
                 // has_button_list
                 if (item.querySelectorAll('button').length > 1 || item.querySelectorAll('input[type=button]').length > 1 || item.querySelectorAll('input[type=submit]').length > 1) {
@@ -446,7 +469,7 @@ class sortCandidates extends Candidates {
         const keywords = ['price', 'recommended', 'ratings', 'distance','time', 'most recent', 'best match', 'relevance', 'featured', 'new', 'highest']
 
         
-        for (const item of document.querySelectorAll('select, ul')) {
+        for (const item of document.querySelectorAll('select')) {
             let keyword_match = false
             let keyword_count = 0
             let has_sort_text = false
@@ -529,17 +552,17 @@ class pageCandidates extends Candidates {
         //     if (closestParentElement.find('*') === outerParentElement.find('* : not(nth-child(1)'))
         // }
         const elements = {
-            divs : document.querySelectorAll('div > nav, div > ul, div > tr, div > pagination, div > section, div > footer'),
-            // nav : document.querySelectorAll('nav'),
+            // divs : document.querySelectorAll('div > nav, div > ul, div > tr, div > pagination, div > section, div > footer'),
+            nav : document.querySelectorAll('nav'),
             // li : document.querySelectorAll('li'),
             // ul : document.querySelectorAll('ul'),
-            span : document.querySelectorAll('span > nav, span > tr'),
+            // span : document.querySelectorAll('span > nav, span > tr'),
             // section : document.querySelectorAll('section'),
             // button : document.querySelectorAll('button'),
             // tr : document.querySelectorAll('tr'),
             // footer : document.querySelectorAll('footer'),
             // a : document.querySelectorAll('a'),
-            // pagination : document.querySelectorAll('pagination'),
+            pagination : document.querySelectorAll('pagination'),
             // b : document.querySelectorAll('b')
         }
 
@@ -560,6 +583,14 @@ class pageCandidates extends Candidates {
                 let nav_type = 0
                 let keywords = ['page', 'show', 'next', 'previous']
                 
+                // if nav is found in footer, is_parent it.
+                if (element == 'nav') {
+                    if (this.checkIfParent(item, 'header') || this.checkIfParent(item, 'footer')) {
+                        continue
+                    }
+                }
+                
+
                 // num_buttons
                 num_buttons += item.querySelectorAll('button').length
                 num_buttons += item.querySelectorAll('input[type="button"]').length
@@ -647,8 +678,8 @@ const pageCandidateFeatures = new pageCandidates()
 data = {
     search : searchCandidateFeatures,
     sort : sortCandidateFeatures,
-    // page : pageCandidateFeatures,
-    // filter : filterCandidateFeatures,
+    page : pageCandidateFeatures,
+    filter : filterCandidateFeatures,
     // viewport size
     viewport_width : window.innerWidth,
     viewport_height : window.innerHeight,
