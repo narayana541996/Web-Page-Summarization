@@ -186,7 +186,7 @@ class searchCandidates extends Candidates {
     }
 
     extractFeatures = function () {
-        for (const item of document.querySelectorAll('form', 'input[type = "text"]')) { //include section to detect search on some websites like momondo.com
+        for (const item of document.querySelectorAll('form', 'input[type = "text"]')) {
             let has_search_attr = false
             let has_button = false
             let has_inner_text = false
@@ -378,26 +378,31 @@ class filterCandidates extends Candidates {
         //     if (closestParentElement.find('*') === outerParentElement.find('* : not(nth-child(1)'))
         // }
         const elements = {
+            form : document.querySelectorAll('form'),
             // divs : document.querySelectorAll('div > ul, div > fieldset, div > section, div > dl, div > article, div > fieldset'),
             // li : document.querySelectorAll('li'),
             // ul : document.querySelectorAll('ul'),
             // desktop_facet : document.querySelectorAll('desktop-facet'),
-            // section : document.querySelectorAll('section'),
+            section : document.querySelectorAll('form:has(input:not([type = "text"],[type = "hidden"]))')? undefined: document.querySelectorAll('section:has(input:not([type="text"], [type="hidden"]))'), // select sections only if there are no forms without text fields(to avoid search forms being counted).
             // button : document.querySelectorAll('button'),
-            form : document.querySelectorAll('form'),
+            
             // dt : document.querySelectorAll('dt'),
-            // fieldset : document.querySelectorAll('fieldset'),
+            // fieldset : (document.querySelectorAll('form:not(:has(input[type = "text"]))') || document.querySelectorAll('section'))? undefined: document.querySelectorAll('fieldset'),
             // dl : document.querySelectorAll('dl'),
             // article : document.querySelectorAll('article')
         }
 
         for (const element in elements) {
-            console.log('element: ',elements[element],' elements: ',elements)
+            console.log('element: ',elements[element],' elements: ',elements,' undefined? ', element[elements] == undefined, ' section filtering... :', document.querySelectorAll('form:has(input:not([type = "text"],[type = "hidden"]))'))
+            if (elements[element] == undefined) {
+                continue
+            }
+            
             for (const item of elements[element]) {
                 let has_checkbox_list = false
                 let num_links = 0
                 let num_inputs = 0
-                let all_child_links_valid = true
+                let all_child_links_valid = false
                 let has_button_list = false
 
                 // has_checkbox_list
@@ -408,14 +413,23 @@ class filterCandidates extends Candidates {
                 num_links = item.querySelectorAll('a').length
 
                 // all_child_links_valid
+                let valid_count = 0
+                let total_count = 0
                 for (const a of item.querySelectorAll('a')) {
-                    if (!a.getAttribute('href')) {
-                        all_child_links_valid = false
+                    if (a.getAttribute('href')) {
+                        valid_count += 1
                     }
+                    total_count += 1
+                    if (valid_count !== total_count) {
+                        break
+                    }
+                }
+                if ((valid_count > 1) && (valid_count === total_count)) {
+                    all_child_links_valid = true
                 }
 
                 // num_inputs
-                num_inputs = item.querySelectorAll('input:not([type = "hidden"], [type = "text"])[type]').length
+                num_inputs = item.querySelectorAll('input:not([type = "hidden"], [type = "text"], [type = "submit"])[type]').length
 
                 // has_button_list
                 if (item.querySelectorAll('button').length > 1 || item.querySelectorAll('input[type=button]').length > 1 || item.querySelectorAll('input[type=submit]').length > 1) {
