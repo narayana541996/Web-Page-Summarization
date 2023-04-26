@@ -379,11 +379,11 @@ class filterCandidates extends Candidates {
         // }
         const elements = {
             form : document.querySelectorAll('form'),
-            // divs : document.querySelectorAll('div > ul, div > fieldset, div > section, div > dl, div > article, div > fieldset'),
-            // li : document.querySelectorAll('li'),
+            // divs : document.querySelectorAll('div:has(input:not([type="text"], [type="hidden"])):has(>section)'), // find div that has inputs other than text or hidden and not have a child div.
+            // li : document.querySelectorAll('li'), document.querySelectorAll('form:has(input:not([type="text"], [type="hidden"]))')? undefined:
             // ul : document.querySelectorAll('ul'),
-            // desktop_facet : document.querySelectorAll('desktop-facet'),
-            section : document.querySelectorAll('form:has(input:not([type = "text"],[type = "hidden"]))')? undefined: document.querySelectorAll('section:has(input:not([type="text"], [type="hidden"]))'), // select sections only if there are no forms without text fields(to avoid search forms being counted).
+            // desktop_facet : document.querySelectorAll('desktop-facet'), :not(:has(>div))
+            // section : document.querySelectorAll('form:has(input:not([type = "text"],[type = "hidden"]))')? undefined: document.querySelectorAll('section:has(input:not([type="text"], [type="hidden"]))'), // select sections only if there are no forms without text fields(to avoid search forms being counted).
             // button : document.querySelectorAll('button'),
             
             // dt : document.querySelectorAll('dt'),
