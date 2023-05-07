@@ -5,9 +5,8 @@ All the required files are in the extension folder.
 
 Trained model: https://drive.google.com/drive/folders/1BgHNtUjdnz41X_wfX3X4HkM5XMusjpli?usp=sharing
 
-Output video: https://youtu.be/IFAdOiZNzlQ
+Output video: https://youtu.be/6hPsRIknGkY
 
-Zip file with presentation video: https://drive.google.com/file/d/19E04cLbo1GsBOfDJGbpWJgoY1j41E3Et/view?usp=sharing
 
 # Requirements:
 Note: These are for the Python portion of the work and assume that the Python with version compatible with the following requirements is already installed.
