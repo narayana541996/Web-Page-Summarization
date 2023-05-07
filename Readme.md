@@ -33,12 +33,6 @@ Note: These steps are with respect to VSCode IDE and assume Python with version 
 2) Run the app.py file using python -m flask run to start the server and copy the address.
 
 
-Steps used for testing the API before installing the extension:
-
-3) If not installed, install live server plugin in VSCode.
-4) Once installed, click 'Go Live' which should be found close to the bottom right corner of the IDE.
-5) Run app.py with 'python -m flask run' command
-
 Steps to install the extension:
 
 Note: This assumes that the latest version of the Google Chrome (complies with manifest version 3) is already installed.
@@ -47,6 +41,7 @@ Note: This assumes that the latest version of the Google Chrome (complies with m
 4) Go to more tools -> Extensions.
 5) Make sure that the 'Developer Mode' is turned on, in the top-right region of the window.
 6) Select 'Load Unpacked' and select the 'Extension' folder(remove double-underscore files from the folder if any before this step).
+7) Make sure the backend(app.py) is up and running.
 7) The extension should now be ready to use.
 
 # Introduction
