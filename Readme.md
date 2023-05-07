@@ -3,7 +3,7 @@ Summarize the layout of a web page so that a screen reader reads on a high level
 
 All the required files are in the extension folder.
 
-Trained model: https://drive.google.com/drive/folders/1BgHNtUjdnz41X_wfX3X4HkM5XMusjpli?usp=sharing
+Trained transformer model: https://drive.google.com/drive/folders/1BgHNtUjdnz41X_wfX3X4HkM5XMusjpli?usp=sharing
 
 Output video: https://youtu.be/6hPsRIknGkY
 
