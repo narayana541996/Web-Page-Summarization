@@ -684,6 +684,8 @@ class pageCandidates extends Candidates {
         }
     }
 }
+
+// console.log('shift-down1: ',document.dispatchEvent(new KeyboardEvent('keydown', {'key' : 'shift'})))
 const searchCandidateFeatures = new searchCandidates()
 const filterCandidateFeatures = new filterCandidates()
 const sortCandidateFeatures = new sortCandidates()
@@ -708,16 +710,8 @@ console.log('search output: ',JSON.stringify(searchCandidateFeatures))
 console.log('filter output: ',JSON.stringify(filterCandidateFeatures))
 console.log('sort output: ',JSON.stringify(sortCandidateFeatures))
 
-// searchCandidateFeatures.makeCsv()
-// filterCandidatesList.makeCsv()
-// extractFeatures()
-// console.log(searchCandidateFeatures)
-// var file = new Blob([json], {type : 'json'})
-// link.href = URL.createObjectURL(file)
-// link.download = 'features.json'
-// link.click()
-// URL.revokeObjectURL(link.href)
 
 
-// replace data with the objects to be sent
+
 fetch('http://127.0.0.1:5000/generate_summary/', {method: 'POST', headers: {"content-Type" : "application/json"}, body: JSON.stringify(data)}).then(response => response.text).then(result => console.log('fetch result: ',result)).catch(error => console.log('error', error))
+
