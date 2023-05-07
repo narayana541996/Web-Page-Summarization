@@ -1,5 +1,5 @@
 # Web-Page-Summarization
-Summarize the layout of a web page so that a screen reader reads on a high level, giving a blind user an overview of the layout.
+Summarize the layout of a web page so that a screen reader reads on a high level, giving a blind user an overview of the layout w.r.t select objects on the web page.
 
 All the required files are in the extension folder.
 
