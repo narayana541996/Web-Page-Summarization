@@ -37,7 +37,7 @@ Steps used for testing the API before installing the extension:
 
 3) If not installed, install live server plugin in VSCode.
 4) Once installed, click 'Go Live' which should be found close to the bottom right corner of the IDE.
-5) In Extension folder, select trigger.html and it should run.
+5) Run app.py with 'python -m flask run' command
 
 Steps to install the extension:
 
@@ -46,7 +46,7 @@ Note: This assumes that the latest version of the Google Chrome (complies with m
 3) On chrome, go to the Customize and control options, which can be found at the top right corner of the window under close button.
 4) Go to more tools -> Extensions.
 5) Make sure that the 'Developer Mode' is turned on, in the top-right region of the window.
-6) Select 'Load Unpacked' and select the 'Extension' folder.
+6) Select 'Load Unpacked' and select the 'Extension' folder(remove double-underscore files from the folder if any before this step).
 7) The extension should now be ready to use.
 
 # Introduction
@@ -58,7 +58,7 @@ In recent years, there has been significant changes to website design, like the 
 
 While there are assistive technologies like screenreader available for a blind user to browse a web page, it may improve the accessibility of a web page but not the usability, as the audio output cannot convey information as effeciently as visual output for three main reasons - 1) Unlike visual, audio is sequential, 2) Audio cannot convey as much detail as visual and 3) It is just not possible to show some visual information in audio, like colors (A screenreader may read out the name of a color, but it is not the same as perceiving the color), patterns and designs, abstract art, etc. As a result, it is still difficult for the user to navigate a web page or understand the information, especially in this age of information overload, where web sites have huge amounts of information.
 
-The purpose of this work is to provide a summary of the objects on a web page (like search field, filters, etc.) to give the blind user a 'mental picture' of the layout of the current web page being shown and the tasks they can perform on the page.  This allows the assistive technology to present the information required for a blind user to decide his/her next action more easily, improving the usability and user experience significantly. For example, in an experiment of ours, we used NVDA, a popular screenreader, to browse a webpage on Expedia (Fig 1), a travel website. We first had to listen to the title information on the tab, then the Expedia logo followed by the 'more travel' drop down menu and the other links like language that are on the top right corner of the window, then the going to, check-in and check-out are read out as headings which are again read out as buttons. By the time we arrived at the search button, it took around 58 seconds, during which time, a user with good vision would have been able to accomplish much more, making the difference in the usability evident.
+The purpose of this work is to provide a summary of the objects on a web page (like search, filters, etc.) with respect to select objects, to give the blind user a 'mental picture' of the layout of the current web page being shown and the tasks they can perform on the page.  This allows the assistive technology to present the information required for a blind user to decide his/her next action more easily, improving the usability and user experience significantly. For example, in an experiment of ours, we used NVDA, a popular screenreader, to browse a webpage on Expedia (Fig 1), a travel website. We first had to listen to the title information on the tab, then the Expedia logo followed by the 'more travel' drop down menu and the other links like language that are on the top right corner of the window, then the going to, check-in and check-out are read out as headings which are again read out as buttons. By the time we arrived at the search button, it took around 58 seconds, during which time, a user with good vision would have been able to accomplish much more, making the difference in the usability evident.
 
 To bridge this gap in usability, unlike most papers related to web summarization, which are focused on summarizing a product or service offered on a web page (like Mabrouk et al marbouk2021), to help the users in activities like making decisions related to the product or service, this work is provides an overview of the webpage so that a blind user gets an idea of where to find the search button (or any other important object on the website) much sooner, and can navigate to that area directly, without having to go through each detail.
 
